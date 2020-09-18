@@ -1,0 +1,21 @@
+{% extends 'login/masterpage.html'%}
+{% block content %}
+
+<h1>Pantalla de inicio de sesion dentro de la Aplicacion</h1>
+Seleccione el banco del cual desea agregar las cuentas<br>
+<br>
+<br>
+<select name="selecciona_banco">
+  <option value="null">Selecciona Banco</option>
+  <option value="BBVA">BBVA</option>
+  <option value="Banamex">Banamex</option>
+  <option value="Santander">Santander</option>
+  <option value="Azteca">Azteca</option>
+  <option value="Sabatell">Sabatell</option>
+</select>
+<form method="get" action="llamadologin">
+
+  <br>
+  <input type="submit" value="Confirma">
+</form>
+{% endblock %}

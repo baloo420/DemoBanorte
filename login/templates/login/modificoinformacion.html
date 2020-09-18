@@ -1,0 +1,34 @@
+{% extends 'login/masterpage.html' %}
+{% block content %}
+
+<h1>Solicitud para modificar informacion</h1>
+Capture los campos a modificar en la cuenta del banco de su preferencia<br>
+<br>
+<br>
+<form method="post" action="llamadobanco">
+  Banco
+  <select name="selecciona_banco">
+    <option value="null">Selecciona Banco Destino</option>
+    <option value="BBVA">BBVA</option>
+    <option value="Banamex">Banamex</option>
+    <option value="Santander">Santander</option>
+    <option value="Azteca">Azteca</option>
+    <option value="Sabatell">Sabatell</option>
+  </select>
+  <br>
+  <br>
+  Direccion
+  <input type="text" name="cuenta_destino" id="cuenta_destino" />
+  <br>
+  <br>
+  Numero de telefono
+  <input type="text" name="nombre_destino" id="nombre_destino" />
+  <br>
+  <br>
+  Correo-e
+  <input type="text" name="monto" id="monto" />
+  <br>
+  <br>
+  <input type="submit" value="Confirma">
+</form>
+{% endblock %}

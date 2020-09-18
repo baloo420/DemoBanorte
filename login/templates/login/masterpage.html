@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<head>
+	<style>
+		ul {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			background-color: #333;
+		}
+		li {
+			float: left;
+		}
+
+		li a {
+			display: block;
+			color: white;
+			text-align: center;
+			padding: 14px 16px;
+			text-decoration: none;
+		}
+		li a:hover {
+			background-color: #111;
+		}
+		</style>
+
+<ul>
+	<li><a href="{% url 'home' %}">Home</a></li>
+    <li><a href="{% url 'agregobanco' %}">Agregar cuenta</a></li>
+    <li><a href="{% url 'saldos' %}">Saldos</a></li>
+    <li><a href="{% url 'solicitoinformacion' %}">Solicito informacion</a></li>
+    <li><a href="{% url 'modificoinformacion' %}">Modificar informacion</a></li>
+    <li><a href="{% url 'solicitotransaccion' %}">Solicitar transaccion</a></li>
+</ul>
+</head>
+<body>
+<div style="background-color: gray;height:700px;">
+{% block content %}
+<center><H1>Esta es la pagina de inicio</h1></center>
+	context
+{% endblock %}
+</div>
+</body>
+</html>
