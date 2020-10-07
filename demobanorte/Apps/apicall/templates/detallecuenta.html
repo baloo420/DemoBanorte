@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 {% extends 'masterpage.html' %}
 {% block content %}
 {% load static %}
   <h1>Pagina de solicitud de informacion de la cuenta</h1>
-
-  <br>
   <br>
     <form method="POST" action="{% url 'devinformacion' %}">
       {% csrf_token %}
@@ -15,7 +12,6 @@
       <option value="transacciones">Transacciones</option>
     </select>
     <br>
-    <br>
     <select name="cuentadetalle" >
       <option value="null">Selecciona Cuenta</option>
       {% for entry in cuentasusuario %}
@@ -23,9 +19,9 @@
       {% endfor %}
     </select>
       <br>
-      <br>
-      <input type="submit" value="Confirma">
+      <input class="btn" type="submit" value="Confirma">
     </form>
+    <br>
     <div class="accounts-transactions content-box">
       {% if DetalleCuenta %}
       <div class="transactions-title">
@@ -114,120 +110,3 @@
           {% endif %}
     </div>
 {% endblock %}
-=======
-{% extends 'masterpage.html' %}
-{% block content %}
-{% load static %}
-  <h1>Pagina de solicitud de informacion de la cuenta</h1>
-
-  <br>
-  <br>
-    <form method="POST" action="{% url 'devinformacion' %}">
-      {% csrf_token %}
-    <select name="serviciosolicitado">
-      <option value="null">Selecciona Servicio</option>
-      <option value="detalle">Detalle de la cuenta</option>
-      <option value="consent">Permisos otorgados a la cuenta</option>
-      <option value="transacciones">Transacciones</option>
-    </select>
-    <br>
-    <br>
-    <select name="cuentadetalle" >
-      <option value="null">Selecciona Cuenta</option>
-      {% for entry in cuentasusuario %}
-        <option value={{ entry.cuenta_numero }}>{{ entry.cuenta_nickname }}</option>
-      {% endfor %}
-    </select>
-      <br>
-      <br>
-      <input type="submit" value="Confirma">
-    </form>
-    <div class="accounts-transactions content-box">
-      {% if DetalleCuenta %}
-      <div class="transactions-title">
-          <h2>Información de la cuenta</h2>
-      </div>
-      <div class="transactions-table">
-          <table width="100%">
-            {% for entry in DetalleCuenta %}
-                <tr class="table-row">
-                    <th>Alias de la cuenta</th>
-                    <td>{{ entry.Nickname }}</td>
-                </tr>
-                <tr class="table-row">
-                    <th>Estatus</th>
-                    <td>{{ entry.Status }}</td>
-                </tr>
-                <tr class="table-row">
-                    <th>Tipo de cuenta</th>
-                    <td>{{ entry.AccountType }}</td>
-                </tr>
-                <tr class="table-row">
-                    <th>Fecha de apertura</th>
-                    <td>{{ entry.OpeningDate }}</td>
-                </tr>
-                <tr class="table-row">
-                    <th>Moneda</th>
-                    <td>{{ entry.Currency }}</td>
-                </tr>
-              {% endfor %}
-            </table>
-          </div>
-          {% endif %}
-          {% if DetallesConsent %}
-          <div class="transactions-title">
-              <h2>Información del consentimiento</h2>
-          </div>
-          <div class="transactions-table">
-            <table width="100%">
-                {% for entry in DetallesConsent %}
-                <tr class="table-row">
-                    <th>Estatus del consentimiento</th>
-                    <td>{{ entry.Status }}</td>
-                </tr>
-                <tr class="table-row">
-                    <th>Fecha de creación</th>
-                    <td>{{ entry.CreationDateTime }}</td>
-                </tr>
-                <tr class="table-row">
-                    <th>Fecha de expiración</th>
-                    <td>{{ entry.ExpirationDateTime }}</td>
-                </tr>
-                <tr class="table-row">
-                    <th>Permisos</th>
-                    <td>{{ entry.Permissions }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-          </div>
-          {% endif %}
-          {% if TransaccionesCuenta %}
-          <div class="transactions-title">
-              <h2>Transacciones</h2>
-          </div>
-          <div class="transactions-table">
-            <table width="100%" id="tabla_transacciones" class="display">
-              <thead>
-                  <tr class="table-row">
-                      <th>Informacion de la transacción</th>
-                      <th>Estatus</th>
-                      <th>Fecha de aplicación</th>
-                      <th>Monto</th>
-                      <th>Moneda</th>
-                  </tr>
-              </thead>
-                {% for entry in TransaccionesCuenta %}
-                <tr class="table-row">
-                  <td>{{ entry.TransactionInformation }}</td>
-                  <td>{{ entry.Status }}</td>
-                  <td>{{ entry.BookingDateTime }}</td>
-                  <td>{{ entry.Amount }}</td>
-                  <td>{{ entry.Currency }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-          </div>
-          {% endif %}
-    </div>
-{% endblock %}
->>>>>>> 5a28afeafdb6503d5350fa1d8071ad7d096d13aa

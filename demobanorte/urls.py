@@ -22,6 +22,7 @@ from demobanorte.Apps.apicall.models import cuentasUsuario
 urlpatterns = [
     path('', views.login, name='login'),
     path('login/', views.login),
+    path('', views.logout, name='logout'),
     path('register/', views.register, name='register'),
     path('admin/', admin.site.urls),
     path('home/', views.home, name='home'),

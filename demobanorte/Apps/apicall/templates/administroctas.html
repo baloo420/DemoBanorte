@@ -1,13 +1,10 @@
-<<<<<<< HEAD
 {% extends 'masterpage.html'%}
 {% block content %}
 {% load static %}
 <h1>Administración de cuentas</h1>
 <br>
-<br>
 <form method="POST" action="{% url 'adminbanco' %}">
     {% csrf_token %}
-
     <div>
         <div class="alt-account-title">
             <label class="radio-label">CNBV
@@ -19,7 +16,6 @@
                 <img src="{% static 'img/logo_cnbv.svg' %}" alt="Logo Banco Banregio">
             </div>
         </div>
-
         <div class="alt-account-title">
             <label class="radio-label">Banorte
                 <input type="radio" checked="checked" name="Institucion"
@@ -36,7 +32,6 @@
     <input class="btn" type="submit" value="Agregar">
 </form>
 <br>
-<br>
 <form method="POST" action="{% url 'eliminocta' %}">
   {% csrf_token %}
   <p>
@@ -46,42 +41,7 @@
       {{ entry.cuenta_nickname }} -- {{ entry.cuenta_institucion }} -- {{ entry.cuenta_currency }}</label>
     <br />
     {% endfor %}
-    <br />
   </p>
-  <input type="submit" value="Eliminar">
+  <input class="btn" type="submit" value="Eliminar">
 </form>
 {% endblock %}
-=======
-{% extends 'masterpage.html'%}
-{% block content %}
-
-<h1>Administración de cuentas</h1>
-<br>
-<br>
-<form method="POST" action="{% url 'adminbanco' %}">
-  {% csrf_token %}
-<select name="institucion">
-  <option value="null">Selecciona institucion</option>
-  {% for entry in NombreInstituciones %}
-    <option value={{ entry.institucion_id }}>{{ entry.institucion_nombre }}</option>
-  {% endfor %}
-</select>
-  <input type="submit" value="Agregar">
-</form>
-<br>
-<br>
-<form method="POST" action="{% url 'eliminocta' %}">
-  {% csrf_token %}
-  <p>
-    {% for entry in Saldos %}
-    <label>
-      <input type="radio" name="numerocuenta" value={{ entry.cuenta_numero }} />
-      {{ entry.cuenta_nickname }} -- {{ entry.cuenta_institucion }} -- {{ entry.cuenta_currency }}</label>
-    <br />
-    {% endfor %}
-    <br />
-  </p>
-  <input type="submit" value="Eliminar">
-</form>
-{% endblock %}
->>>>>>> 5a28afeafdb6503d5350fa1d8071ad7d096d13aa
