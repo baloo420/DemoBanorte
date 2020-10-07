@@ -1,7 +1,7 @@
 import requests
 import json
 import datetime
-from demobanorte.Apps.apicall.models import cuentasUsuario
+from demobanorte.Apps.apicall.models import cuentasUsuario, Parametros
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from demobanorte.Apps.apicall.models import DetallesCuenta, DetalleConsent, DetalleTransaccion, procesocta
@@ -9,12 +9,13 @@ from demobanorte.Apps.apicall.models import DetallesCuenta, DetalleConsent, Deta
 def logincnbv(code, state):
     cliente = User.objects.get()
     Cliente_id = cliente.username
-    client_id = 'z104dwltrg5e2cteoskjy5j2f20w0pte5cex3k0z'
-    client_secret = '3syhvkffzxwtbc32rupxxraupx0iflwjsa4qf5u5'
+    client_id = Parametros.objects.get(parametro_id='CLIENT_ID', parametro_proxi='CNBV')
+    client_secret = Parametros.objects.get(parametro_id='CLIENT_SEC', parametro_proxi='CNBV')
+    Ruta_Redirect = Parametros.objects.get(parametro_id='RUTA_RED', parametro_proxi='CNBV')
 # Se obtiene el Access Token para las operaciones
     url = "https://oauth2.ofpilot.com/hydra-public/oauth2/token"
 
-    payload = 'grant_type=authorization_code&code='+code+'&client_id='+client_id+'&client_secret='+client_secret+'&redirect_uri=https%3A//127.0.0.1%3A8000/redirect/'
+    payload = 'grant_type=authorization_code&code='+code+'&client_id='+client_id.parametro_valor+'&client_secret='+client_secret.parametro_valor+'&redirect_uri='+Ruta_Redirect.parametro_valor
     headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Cookie': 'oauth2_authentication_csrf=MTYwMTkzMDQ2N3xEdi1CQkFFQ180SUFBUkFCRUFBQVB2LUNBQUVHYzNSeWFXNW5EQVlBQkdOemNtWUdjM1J5YVc1bkRDSUFJRGRqTmpFMFlUSmxZVGRtWXpRME0yTTVNREEwTXpFMFlUVmhaakV4WXpGbXyYQXMOqEMA7vX-n-hOsUszVLGKwsXzu6iBDnYDTWHGvg=='
@@ -52,7 +53,8 @@ def logincnbv(code, state):
         cuenta_currency = Currency,
         cuenta_status = Status,
         cuenta_id_token = id_token,
-        cuenta_scope = scope
+        cuenta_scope = scope,
+        cuenta_inst_inf = 'CNBV'
         )
         r.save()
     s = procesocta(
@@ -166,34 +168,57 @@ def DevTransacciones(cuenta):
     return(Transaccionesdeta)
 
 def EliminaConsent(cuenta):
+    Existe = 'No'
     cliente = User.objects.get()
     Cliente_id = cliente.username
-    cuentaUsuario = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta)
-    DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaUsuario.cuenta_institucion, proceso_inst_inf='CNBV')
-    token = DatosProceso.proceso_token
-
-    url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+consentid
-
-    payload = {}
-    headers = {
-      'Authorization': 'Bearer '+token,
-      'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
-    }
-
-    response = requests.request("DELETE", url, headers=headers, data = payload)
-    
+    cuentaeliminar = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta, cuenta_inst_inf='CNBV')
+    cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id, cuenta_inst_inf='CNBV', cuenta_institucion=cuentaeliminar.cuenta_institucion)
     for entry in cuentaUsuario:
-        entry.delete()
+        print('Entre al for--------------------------------------------')
+        if entry.cuenta_numero != cuenta:
+            Existe = 'Si'
+        print('Exite tiene valor de False'+Existe)
+    if Existe == 'No':
+        DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+        token = DatosProceso.proceso_token
+        #Se va por el consent_Id
+        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
+
+        payload = "{  \"Data\":{    \"TransactionToDateTime\":\"2020-10-23T06:44:05.618Z\",    \"ExpirationDateTime\":\"2021-10-23T06:44:05.618Z\",    \"Permissions\":[\"ReadAccountsBasic\",\"ReadAccountsDetail\",\"ReadBalances\",\"ReadTransactionsBasic\",\"ReadTransactionsDebits\",\"ReadTransactionsDetail\"],    \"TransactionFromDateTime\":\"2020-10-23T06:44:05.618Z\"  }}"
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer '+token,
+        }
+
+        response = requests.request("POST", url, headers=headers, data = payload)
+        respuesta = response.json()
+        Data = respuesta['Data']
+        Consent = Data['ConsentId']
+        #Con el consent se envia la eliminacion del mismo
+        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
+
+        payload = {}
+        headers = {
+          'Authorization': 'Bearer '+token,
+          'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
+        }
+        response = requests.request("DELETE", url, headers=headers, data = payload)
+        proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+        proceliminar.delete()
+        cuentaeliminar.delete()
+    else:
+        cuentaeliminar.delete()
 
 def refrescarToken(client_user):
-    client_id = 'z104dwltrg5e2cteoskjy5j2f20w0pte5cex3k0z'
-    client_secret = '3syhvkffzxwtbc32rupxxraupx0iflwjsa4qf5u5'
+    client_id = Parametros.objects.get(parametro_id='CLIENT_ID', parametro_proxi='CNBV')
+    client_secret = Parametros.objects.get(parametro_id='CLIENT_SEC', parametro_proxi='CNBV')
+    Ruta_Redirect = Parametros.objects.get(parametro_id='RUTA_RED', parametro_proxi='CNBV')
     TokenAActualizar = procesocta.objects.all().filter(proceso_user=client_user, proceso_inst_inf='CNBV')
     for entry in TokenAActualizar:
         tokenRefresh = entry.proceso_refresh_token
         url = "https://oauth2.ofpilot.com/hydra-public/oauth2/token"
 
-        payload = 'grant_type=refresh_token&refresh_token='+tokenRefresh+'&client_id='+client_id+'&client_secret='+client_secret+'&redirect_uri=https%3A//127.0.0.1%3A8000/redirect/'
+        payload = 'grant_type=refresh_token&refresh_token='+tokenRefresh+'&client_id='+client_id.parametro_valor+'&client_secret='+client_secret.parametro_valor+'&redirect_uri='+Ruta_Redirect.parametro_valor
         headers = {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Cookie': 'oauth2_authentication_csrf=MTYwMTkzMDQ2N3xEdi1CQkFFQ180SUFBUkFCRUFBQVB2LUNBQUVHYzNSeWFXNW5EQVlBQkdOemNtWUdjM1J5YVc1bkRDSUFJRGRqTmpFMFlUSmxZVGRtWXpRME0yTTVNREEwTXpFMFlUVmhaakV4WXpGbXyYQXMOqEMA7vX-n-hOsUszVLGKwsXzu6iBDnYDTWHGvg=='
