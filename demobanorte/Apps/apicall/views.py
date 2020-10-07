@@ -38,6 +38,9 @@ def login(request):
                     # Y le redireccionamos a la portada
                     return redirect('home')
                 # Añadimos los datos recibidos al formulario
+            else:
+                print('-----------Entre al else por que no es valido el form---------------')
+                return render(request, "login.html", {'form': form, 'form2': form2})
         elif x != None:
             print('-----------Ente para agregar usuario---------------')
             form2 = UserCreationForm(data=request.POST)
@@ -92,7 +95,7 @@ def home(request):
     Nombre_Institucion = ''
     for entry in cuentaUsuario:
         numeroCuenta = entry.cuenta_numero
-        Institucion_desc = instituciones.objects.get(institucion_codigo=entry.cuenta_institucion.strip())
+        Institucion_desc = instituciones.objects.get(institucion_codigo=entry.cuenta_institucion)
         if Institucion_desc:
             Nombre_Institucion = Institucion_desc.institucion_nombre
             icono = "img/logo_"+Institucion_desc.institucion_id+".svg"
@@ -129,6 +132,20 @@ def adminbanco(request):
     RutaArmada = Ruta+Client_id+'&response_type=code&state='+state+'&scope=openid+offline+ReadAccountsBasic+ReadAccountsDetail+ReadBalances+ReadTransactionsBasic+ReadTransactionsDebits+ReadTransactionsDetail&redirect_uri='+redirecion
     return redirect(RutaArmada)
 
+def redirigir(request):
+    CuentaCode = request.GET['code']
+    Cuentastate = request.GET['state']
+    logincnbv(CuentaCode, Cuentastate)
+    cliente = User.objects.get()
+    Cliente_id = cliente.username
+    cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
+    Json_file = []
+    for entry in cuentaUsuario:
+        numeroCuenta = entry.cuenta_numero
+        Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
+    context={'Saldos':Json_file, 'Cliente_id':Cliente_id}
+    return render(request, 'administroctas.html', context)
+
 def eliminocta(request):
     cuenta = request.POST['numerocuenta']
     EliminaConsent(cuenta)
@@ -137,9 +154,8 @@ def eliminocta(request):
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
     for entry in cuentaUsuario:
-        tokenCliente = entry.cuenta_token
         numeroCuenta = entry.cuenta_numero
-        Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "",entry.cuenta_currency, ""))
+        Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
     context={'Saldos':Json_file, 'Cliente_id':Cliente_id}
     return render(request, 'administroctas.html', context)
 
@@ -169,24 +185,10 @@ def devinformacion(request):
         context = {'Cliente_id':Cliente_id}
     return render(request, 'detallecuenta.html', context)
 
-def redirigir(request):
-    CuentaCode = request.GET['code']
-    Cuentastate = request.GET['state']
-    logincnbv(CuentaCode, Cuentastate)
-    cliente = User.objects.get()
-    cuenta_usuario = cliente.username
-    cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=cuenta_usuario)
-    Json_file = []
-    for entry in cuentaUsuario:
-        numeroCuenta = entry.cuenta_numero
-        Institucion_desc = instituciones.objects.all().filter(institucion_codigo=entry.cuenta_institucion)
-        for entry1 in Institucion_desc:
-            Nombre_Institucion = entry1.institucion_nombre
-        Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', Nombre_Institucion , "", entry.cuenta_currency, ""))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id}
-    return render(request, 'administroctas.html', context)
-
 def logout(request):
     logout(request)
     return redirect('https://www.banorte.com/wps/portal/banorte/Home/inicio')
     # Redirect to a success page.
+
+def logout2(request):
+    logout(request)

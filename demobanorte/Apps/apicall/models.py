@@ -33,6 +33,7 @@ class cuentasUsuario(models.Model):
     cuenta_status = models.CharField('Estatus',max_length=100, null=False)
     cuenta_id_token = models.CharField('Id token',max_length=9999, null=False)
     cuenta_scope = models.CharField('Scope',max_length=999, null=False)
+    cuenta_inst_inf = models.CharField('Proveedor de Informacion',max_length=40, null=False)
 
     def __str__(self):
         txt = "{0}, {1}, {2}"
