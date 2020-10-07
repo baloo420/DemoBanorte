@@ -1,37 +1,38 @@
 {% extends 'masterpage.html'%}
 {% block content %}
 {% load static %}
+<div class="content">
 <h1>Administración de cuentas</h1>
-<br>
-<form method="POST" action="{% url 'adminbanco' %}">
-    {% csrf_token %}
-    <div>
-        <div class="alt-account-title">
-            <label class="radio-label">CNBV
-                <input type="radio" checked="checked" name="Institucion"
-                    value="CNBV">
-                <span class="checkmark"></span>
-            </label>
-            <div class="inst-icon">
-                <img src="{% static 'img/logo_cnbv.svg' %}" alt="Logo Banco Banregio">
+<div class="menuServicio">
+    <form method="POST" action="{% url 'adminbanco' %}">
+        {% csrf_token %}
+        <!-- <div> -->
+            <div class="alt-account-title">
+                <label class="radio-label"><!-- CNBV -->
+                    <input type="radio" checked="checked" name="Institucion" value="CNBV">
+                    <!-- <span class="checkmark"></span> -->
+                    <img src="{% static 'img/logo_cnbv.svg' %}" alt="Logo Banco Banregio">
+                </label>
+                <!-- <div class="inst-icon">
+                    <img src="{% static 'img/logo_cnbv.svg' %}" alt="Logo Banco Banregio">
+                </div> -->
             </div>
-        </div>
-        <div class="alt-account-title">
-            <label class="radio-label">Banorte
-                <input type="radio" checked="checked" name="Institucion"
-                    value="banorte">
-                <span class="checkmark"></span>
-            </label>
-            <div class="inst-icon">
-                <img src="{% static 'img/logo_banorte.svg' %}" alt="Logo Banco Banregio">
+            <div class="alt-account-title">
+                <label class="radio-label"><!-- Banorte -->
+                    <input type="radio" checked="checked" name="Institucion" value="banorte">
+                    <!-- <span class="checkmark"></span> -->
+                    <img src="{% static 'img/logo_banorte.svg' %}" alt="Logo Banco Banregio">
+                </label>
+                <!-- <div class="inst-icon">
+                    <img src="{% static 'img/logo_banorte.svg' %}" alt="Logo Banco Banregio">
+                </div> -->
             </div>
-        </div>
-    </div>
-    <!-- Usar Clase btn para los botones
-    <input class="btn"-->
-    <input class="btn" type="submit" value="Agregar">
-</form>
-<br>
+        <!-- </div> -->
+        <!-- Usar Clase btn para los botones
+        <input class="btn"-->
+        <input class="btn" type="submit" value="Agregar">
+    </form>
+</div>
 <form method="POST" action="{% url 'eliminocta' %}">
   {% csrf_token %}
   <p>
@@ -44,4 +45,5 @@
   </p>
   <input class="btn" type="submit" value="Eliminar">
 </form>
+</div>
 {% endblock %}
