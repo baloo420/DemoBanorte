@@ -713,3 +713,158 @@ form.sign-in-form {
     left: 50%;
   }
 }
+
+
+
+
+
+/**********      Banorte     **********/
+@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500");
+@font-face{
+  font-family:'Gotham Book';
+  src:url("../fonts/Gotham-Book.eot?#iefix") format("embedded-opentype"),
+  url("../fonts/Gotham-Book.otf") format("opentype"),
+  url("../fonts/Gotham-Book.woff") format("woff"),
+  url("../fonts/Gotham-Book.ttf") format("truetype"),
+  url("../fonts/Gotham-Book.svg#Gotham-Book") format("svg");
+  font-weight:400;
+  font-style:normal;
+}
+@font-face{
+  font-family:'Gotham';
+  src:url("../fonts/Gotham-Medium.eot?#iefix") format("embedded-opentype"),
+  url("../fonts/Gotham-Medium.otf") format("opentype"),
+  url("../fonts/Gotham-Medium.woff") format("woff"),
+  url("../fonts/Gotham-Medium.ttf") format("truetype"),
+  url("../fonts/Gotham-Medium.svg#Gotham-Medium") format("svg");
+  font-weight:500;
+  font-style:normal;
+}
+@font-face{
+  font-family:'banorte-icons';
+  src:url("../fonts/banorte-icons.eot?dlrjj1");
+  src:url("../fonts/banorte-icons.eot?dlrjj1#iefix") format("embedded-opentype"), url("../fonts/banorte-icons.ttf?dlrjj1") format("truetype"), url("../fonts/banorte-icons.woff?dlrjj1") format("woff"), url("../fonts/banorte-icons.svg?dlrjj1#banorte-icons") format("svg");
+  font-weight:normal;
+  font-style:normal;
+}
+
+
+h1{
+  font-size:26px;
+  color:#eb0029;
+  font-weight:500;
+  font-family:'Gotham', Helvetica, Arial, sans-serif;
+  padding: 1.5rem 0;
+}
+
+
+
+
+
+
+
+
+
+.menuServicio{
+  margin-bottom:25px;
+}
+.menuServicio form{
+  display:block;
+  padding:0px;
+  vertical-align:middle;
+}
+.menuServicio select{
+  max-width:400px;
+  width:80%;
+  height:35px;
+  display:block;
+  border: 1px solid #E5E5E5;
+  outline: none !important;
+  font-size: 12px;
+  height: 35px;
+  padding: 6px 12px;
+  line-height: 1.64;
+  font-family:'Gotham';
+}
+
+
+.btn{
+  color:#ffffff;
+  background-color:#eb0029;
+  border-color:#eb0029;
+  border-radius:0px;
+  height:30px;
+  font-family:'Gotham';
+  vertical-align:top;
+}
+.radio-label{
+  position:relative;
+  display: inline-block;
+}
+.radio-label input{
+  position:absolute;
+  top:0px;
+  left:0px;
+  height:40px;
+  width:100%;
+  background:rgba(0, 0, 0, 0);
+  z-index:0;
+}
+.radio-label img{
+  height:40px;
+  top:0px;
+  left:0px;
+  z-index:2;
+  width:initial;
+  position:inherit;
+  display:inline-block;
+}
+.alt-account-title{
+  width:initial;
+  margin-right:10px;
+}
+
+
+.content{
+  max-width:90%;
+  margin:0 auto;
+}
+
+@media (min-width:576px){
+  .content{
+    max-width:540px;
+  }
+
+  .menuServicio select{
+    display:inline-block;
+    max-width:350px;
+  }
+}
+@media (min-width:768px){
+  .content{
+    max-width:720px;
+  }
+  .menuServicio form select{
+    margin-right:20px;
+  }
+}
+@media (min-width:992px){
+  .content{
+    max-width:960px;
+  }
+}
+@media (min-width:1200px){
+  .content{
+    max-width:1140px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
