@@ -336,3 +336,65 @@ def refrescarToken(client_user):
             Descrip = response.error_description
             Mensaje += 'Error:'+str(codigo)+' Que indica:'+Descrip
     return(Mensaje)
+
+def eliminoconsent(cuenta):
+    Existe = 'No'
+    cliente = User.objects.get()
+    Cliente_id = cliente.username
+    cuentaeliminar = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta, cuenta_inst_inf='CNBV')
+    cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id, cuenta_inst_inf='CNBV', cuenta_institucion=cuentaeliminar.cuenta_institucion)
+    for entry in cuentaUsuario:
+        if entry.cuenta_numero != cuenta:
+            Existe = 'No'
+    if Existe == 'No':
+        DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+        token = DatosProceso.proceso_token
+        #Se va por el consent_Id
+        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
+
+        payload = "{  \"Data\":{    \"TransactionToDateTime\":\"2020-10-23T06:44:05.618Z\",    \"ExpirationDateTime\":\"2021-10-23T06:44:05.618Z\",    \"Permissions\":[\"ReadAccountsBasic\",\"ReadAccountsDetail\",\"ReadBalances\",\"ReadTransactionsBasic\",\"ReadTransactionsDebits\",\"ReadTransactionsDetail\"],    \"TransactionFromDateTime\":\"2020-10-23T06:44:05.618Z\"  }}"
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer '+token,
+        }
+
+        response = requests.request("POST", url, headers=headers, data = payload)
+        if response.status_code == 201:
+            respuesta = response.json()
+            Data = respuesta['Data']
+            Consent = Data['ConsentId']
+            #Con el consent se envia la eliminacion del mismo
+            url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
+
+            payload = {}
+            headers = {
+              'Authorization': 'Bearer '+token,
+              'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
+            }
+            response = requests.request("DELETE", url, headers=headers, data = payload)
+            print('------------------------Eliminar Consentimiento-------------------------------')
+            print(response)
+            print('-----------------------------------------------------------------------')
+            if response.status_code == 204:
+                #proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+                #proceliminar.delete()
+                #cuentaeliminar.delete()
+                Mensaje = 'Se elimino consentimiento'
+            elif response.status_code == 400 or response.status_code == 401:
+                codigo = response.status_code
+                Mensaje = 'Error:'+str(codigo)
+            else:
+                codigo = response.status_code
+                Descrip = response.error_description
+                Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
+        elif response.status_code == 400 or response.status_code == 401:
+            codigo = response.status_code
+            Mensaje = 'Error:'+str(codigo)
+        else:
+            codigo = response.status_code
+            Descrip = response.error_description
+            Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
+    else:
+        Mensaje = 'Se elimino la cuenta '+cuentaeliminar.cuenta_nickname+' no asi el consentimiento ya que se tiene otra cuenta ligada'
+        #cuentaeliminar.delete()
+    return(Mensaje)
