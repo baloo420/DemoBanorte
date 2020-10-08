@@ -7,45 +7,33 @@
 <div class="menuServicio">
     <form method="POST" action="{% url 'adminbanco' %}" class="menuCuentas">
         {% csrf_token %}
-        <!-- <div> -->
             <div class="alt-account-title">
                 <label class="radio-label"><!-- CNBV -->
                     <input type="radio" checked="checked" name="Institucion" value="CNBV">
-                    <!-- <span class="checkmark"></span> -->
                     <img src="{% static 'img/logo_cnbv.svg' %}" alt="Logo Banco Banregio">
                 </label>
-                <!-- <div class="inst-icon">
-                    <img src="{% static 'img/logo_cnbv.svg' %}" alt="Logo Banco Banregio">
-                </div> -->
             </div>
             <div class="alt-account-title">
                 <label class="radio-label"><!-- Banorte -->
                     <input type="radio" checked="checked" name="Institucion" value="banorte">
-                    <!-- <span class="checkmark"></span> -->
                     <img src="{% static 'img/logo_banorte.svg' %}" alt="Logo Banco Banregio">
                 </label>
-                <!-- <div class="inst-icon">
-                    <img src="{% static 'img/logo_banorte.svg' %}" alt="Logo Banco Banregio">
-                </div> -->
             </div>
-        <!-- </div> -->
-        <!-- Usar Clase btn para los botones
-        <input class="btn"-->
         <input class="btn" type="submit" value="Agregar">
     </form>
 </div>
-<<<<<<< HEAD
-
-
 
 <form method="POST" action="{% url 'eliminocta' %}" class="form_content">
     {% csrf_token %}
 
-    <div class="tarjetas" id="eliminocta_div">
+    <div class="tarjetas accounts-transactions content-box" id="eliminocta_div">
         {% for entry in Saldos %}
         <div class="tarjeta">
-            <div>
+            <div class="divMid">
                 <input type="radio" name="numerocuenta" value={{ entry.cuenta_numero }} />
+            </div>
+            <div class="divMid text-right">
+                {{ entry.cuenta_currency }}
             </div>
             <div>
                 {{ entry.cuenta_nickname }}
@@ -53,31 +41,15 @@
             <div>
                 {{ entry.cuenta_institucion }}
             </div>
-            <div>
-                {{ entry.cuenta_currency }}
-            </div>
         </div>
         {% endfor %}
     </div>
 
-    <input class="btn" type="submit" value="Eliminar" id="eliminocta_btn">
-=======
-<form method="POST" action="{% url 'eliminocta' %}">
-  {% csrf_token %}
-  <p>
-    {% for entry in Saldos %}
-    <label>
-      <input type="radio" name="numerocuenta" value={{ entry.cuenta_numero }} />
-      {{ entry.cuenta_nickname }} -- {{ entry.cuenta_institucion }} -- {{ entry.cuenta_currency }}</label>
-    <br />
-    {% endfor %}
-  </p>
-  <input class="btn" type="submit" name='Elimino' value="Eliminar">
-  <input class="btn" type="submit" name='Consent' value="Eliminar Consent">
->>>>>>> 1c76b774d7c7a77dd191963d5b8e1217e8e69209
+    <div class="menuElimina">
+        <input class="btn" type="submit" name='Elimino' value="Eliminar" id="eliminocta_btn">
+        <input class="btn" type="submit" name='Consent' value="Eliminar Consentimiento" id="eliminoconsent_btn">
+    </div>
 </form>
-
-
 
 </div>
 {% endblock %}

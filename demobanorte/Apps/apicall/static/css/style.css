@@ -33,9 +33,9 @@ a:hover{
 }
 
 .header-top {
-  padding-left: 5%;
+  /*padding-left: 5%;
   padding-right: 5%;
-  width: 100%;
+  width: 100%;*/
   background-color: transparent;
   margin-bottom: 25px;
 }
@@ -719,7 +719,6 @@ form.sign-in-form {
 
 
 /**********      Banorte     **********/
-@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500");
 @font-face{
   font-family:'Gotham Book';
   src:url("../fonts/Gotham-Book.eot?#iefix") format("embedded-opentype"),
@@ -804,6 +803,9 @@ h1{
   vertical-align:top;
   width:100%;
   display:block;
+  padding-bottom:125px;
+  margin-bottom:50px;
+  margin-top: 20px;
 }
 .tarjeta{
   background-color:#FFFFFF;
@@ -811,30 +813,68 @@ h1{
   margin:15px 1%;
   display:inline-block;
   vertical-align:top;
+/*  box-shadow: -5px 0px 20px 3px #DDDDDD;*/
+  border:1px solid #DDDDDD;
+  border-radius:4px;
+  padding:8px;
 }
+.tarjeta:hover{
+  box-shadow: -5px 0px 20px 3px #DDDDDD;
+}
+.tarjeta.active{
+  box-shadow: -5px 0px 20px 3px #DDDDDD;
+}
+
+
+
 .form_content{
   width:100%;
+  padding:20px 0px;
 }
 .hidden{
   display:none;
 }
+.menuElimina{
+
+}
+.menuElimina input{
+  display:inline-block;
+  margin:5px 10px;
+}
+
+.divMid{
+  display:inline-block;
+  width:48%;
+}
+.text-right{
+  text-align:right;
+}
+
+.menuServicio form{
+  display:block;
+  margin-bottom: 30px;
+}
+.menuServicio form select{
+  display: inline-block;
+  max-width: 350px;
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #AAAAAA;
+}
+
 
 @media (min-width:576px){
   .content{
     max-width:540px;
   }
-  /*.menuServicio select{
-    display:inline-block;
-    max-width:350px;
-  }*/
 }
 @media (min-width:768px){
   .content{
     max-width:720px;
   }
-  /*.menuServicio form select{
+  .menuServicio form select{
     margin-right:20px;
-  }*/
+  }
 }
 @media (min-width:992px){
   .content{

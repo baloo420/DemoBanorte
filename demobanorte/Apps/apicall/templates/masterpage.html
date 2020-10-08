@@ -22,18 +22,20 @@
 <body>
 	<div class="main-container">
 		<div class="header-top">
-			<div class="columns2A">
-				<a href="{% url 'logout' %}" class="logo"><span style="opacity:0!important;">Pagina inicio</span></a>
-				<div class="menu-container">
-					<a class="active" href="{% url 'home' %}">Home</a>
-					<a href="{% url 'agregobanco' %}">Administrar Cuentas</a>
-					<a href="{% url 'informacioncuenta' %}">Detalles de Cuentas</a>
+			<div class="content">
+				<div class="columns2A">
+					<a href="{% url 'logout' %}" class="logo"><span style="opacity:0!important;">Pagina inicio</span></a>
+					<div class="menu-container">
+						<a class="main-menu" href="{% url 'home' %}">Home</a>
+						<a class="main-menu" href="{% url 'agregobanco' %}">Administrar Cuentas</a>
+						<a class="main-menu" href="{% url 'informacioncuenta' %}">Detalles de Cuentas</a>
+					</div>
 				</div>
-			</div>
-			<div class="columns2B">
-				<div class="menu-container">
-					<p class="home-username">{{ Cliente_id }}</p>
-					<a href="https://www.banorte.com/" class="log-out"></a>
+				<div class="columns2B">
+					<div class="menu-container">
+						<p class="home-username">{{ Cliente_id }}</p>
+						<a href="https://www.banorte.com/" class="log-out"></a>
+					</div>
 				</div>
 			</div>
 		</div>
