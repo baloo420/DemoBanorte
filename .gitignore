@@ -24,6 +24,7 @@ Demo.zip
 
 #Django cache
 __pycache__/
+**/__pycache__/
 
 #virtual enviroments
 venv/
