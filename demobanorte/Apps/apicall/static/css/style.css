@@ -761,55 +761,6 @@ h1{
 
 
 
-
-
-
-/*
-.menuServicio{
-  margin-bottom:25px;
-}
-.menuServicio form{
-  display:block;
-  padding:0px;
-  vertical-align:middle;
-}
-.menuServicio select{
-  max-width:400px;
-  width:80%;
-  height:35px;
-  display:block;
-  border: 1px solid #E5E5E5;
-  outline: none !important;
-  font-size: 12px;
-  height: 35px;
-  padding: 6px 12px;
-  line-height: 1.64;
-  font-family:'Gotham';
-}
-
-
-.btn{
-  color:#ffffff;
-  background-color:#eb0029;
-  border-color:#eb0029;
-  border-radius:0px;
-  height:30px;
-  font-family:'Gotham';
-  vertical-align:top;
-}
-.radio-label{
-  position:relative;
-  display: inline-block;
-}
-.radio-label input{
-  position:absolute;
-  top:0px;
-  left:0px;
-  height:40px;
-  width:100%;
-  background:rgba(0, 0, 0, 0);
-  z-index:0;
-}*/
 .radio-label{
   display:inline-block;
 }
@@ -848,11 +799,30 @@ h1{
   vertical-align: middle;
 }
 
+
+.tarjetas{
+  vertical-align:top;
+  width:100%;
+  display:block;
+}
+.tarjeta{
+  background-color:#FFFFFF;
+  width:45%;
+  margin:15px 1%;
+  display:inline-block;
+  vertical-align:top;
+}
+.form_content{
+  width:100%;
+}
+.hidden{
+  display:none;
+}
+
 @media (min-width:576px){
   .content{
     max-width:540px;
   }
-
   /*.menuServicio select{
     display:inline-block;
     max-width:350px;
@@ -869,6 +839,11 @@ h1{
 @media (min-width:992px){
   .content{
     max-width:960px;
+  }
+
+
+  .tarjeta{
+    width:31%;
   }
 }
 @media (min-width:1200px){

@@ -33,17 +33,35 @@
         <input class="btn" type="submit" value="Agregar">
     </form>
 </div>
-<form method="POST" action="{% url 'eliminocta' %}">
-  {% csrf_token %}
-  <p>
-    {% for entry in Saldos %}
-    <label>
-      <input type="radio" name="numerocuenta" value={{ entry.cuenta_numero }} />
-      {{ entry.cuenta_nickname }} -- {{ entry.cuenta_institucion }} -- {{ entry.cuenta_currency }}</label>
-    <br />
-    {% endfor %}
-  </p>
-  <input class="btn" type="submit" value="Eliminar">
+
+
+
+<form method="POST" action="{% url 'eliminocta' %}" class="form_content">
+    {% csrf_token %}
+
+    <div class="tarjetas" id="eliminocta_div">
+        {% for entry in Saldos %}
+        <div class="tarjeta">
+            <div>
+                <input type="radio" name="numerocuenta" value={{ entry.cuenta_numero }} />
+            </div>
+            <div>
+                {{ entry.cuenta_nickname }}
+            </div>
+            <div>
+                {{ entry.cuenta_institucion }}
+            </div>
+            <div>
+                {{ entry.cuenta_currency }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <input class="btn" type="submit" value="Eliminar" id="eliminocta_btn">
 </form>
+
+
+
 </div>
 {% endblock %}
