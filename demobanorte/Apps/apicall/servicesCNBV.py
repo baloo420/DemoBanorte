@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from demobanorte.Apps.apicall.models import DetallesCuenta, DetalleConsent, DetalleTransaccion, procesocta
 #####Flujo inicial
 def logincnbv(code, state):
+    Mensaje= ''
     cliente = User.objects.get()
     Cliente_id = cliente.username
     client_id = Parametros.objects.get(parametro_id='CLIENT_ID', parametro_proxi='CNBV')
@@ -25,51 +26,72 @@ def logincnbv(code, state):
     print('------------------------Access Token-------------------------------')
     print(response)
     print('-----------------------------------------------------------------------')
-    respuesta = response.json()
-    Access_Token = respuesta['access_token']
-    id_token = respuesta['id_token']
-    refresh_token = respuesta['refresh_token']
-    scope = respuesta['scope']
-#En esta parte obtenemos las cuentas del usuario
-    url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/accounts"
+    if response.status_code == 200:
+        respuesta = response.json()
+        Access_Token = respuesta['access_token']
+        id_token = respuesta['id_token']
+        refresh_token = respuesta['refresh_token']
+        scope = respuesta['scope']
+    #En esta parte obtenemos las cuentas del usuario
+        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/accounts"
 
-    payload = {}
-    headers = {
-      'Authorization': 'Bearer '+Access_Token,
-      'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
-    }
+        payload = {}
+        headers = {
+          'Authorization': 'Bearer '+Access_Token,
+          'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
+        }
 
-    response = requests.request("GET", url, headers=headers, data = payload)
-    print('------------------------Devuelvo las cuentas-------------------------------')
-    print(response)
-    print('-----------------------------------------------------------------------')
-    pruebaload = json.loads(response.text)
-    for Informacion in pruebaload["Data"]["Account"]:
-        Nocuenta = Informacion['AccountId']
-        Nickname = Informacion['Nickname']
-        Currency = Informacion['Currency']
-        Status = Informacion['Status']
-        institucion = Informacion['Servicer']['Identification']
-        r = cuentasUsuario(
-        cuenta_numero = Nocuenta,
-        cuenta_user = Cliente_id,
-        cuenta_institucion = institucion,
-        cuenta_nickname = Nickname,
-        cuenta_currency = Currency,
-        cuenta_status = Status,
-        cuenta_id_token = id_token,
-        cuenta_scope = scope,
-        cuenta_inst_inf = 'CNBV'
-        )
-        r.save()
-    s = procesocta(
-    proceso_user = Cliente_id,
-    proceso_token = Access_Token,
-    proceso_refresh_token = refresh_token,
-    proceso_inst_inf = 'CNBV',
-    proceso_cod_inst = institucion
-    )
-    s.save()
+        response = requests.request("GET", url, headers=headers, data = payload)
+        print('------------------------Devuelvo las cuentas-------------------------------')
+        print(response)
+        print('-----------------------------------------------------------------------')
+        if response.status_code == 200:
+            pruebaload = json.loads(response.text)
+            if pruebaload["Data"]["Account"]:
+                for Informacion in pruebaload["Data"]["Account"]:
+                    Nocuenta = Informacion['AccountId']
+                    Nickname = Informacion['Nickname']
+                    Currency = Informacion['Currency']
+                    Status = Informacion['Status']
+                    institucion = Informacion['Servicer']['Identification']
+                    r = cuentasUsuario(
+                    cuenta_numero = Nocuenta,
+                    cuenta_user = Cliente_id,
+                    cuenta_institucion = institucion,
+                    cuenta_nickname = Nickname,
+                    cuenta_currency = Currency,
+                    cuenta_status = Status,
+                    cuenta_id_token = id_token,
+                    cuenta_scope = scope,
+                    cuenta_inst_inf = 'CNBV'
+                    )
+                    r.save()
+                s = procesocta(
+                proceso_user = Cliente_id,
+                proceso_token = Access_Token,
+                proceso_refresh_token = refresh_token,
+                proceso_inst_inf = 'CNBV',
+                proceso_cod_inst = institucion
+                )
+                s.save()
+                Mensaje = 'Se agregaron las cuentas correctamente'
+            else:
+                Mensaje = 'No se recibieron cuentas relacionadas al usuario o no se le dio consentimiento a ninguna cuenta'
+        elif response.status_code == 400 or response.status_code == 401:
+            codigo = response.status_code
+            Mensaje = 'Error:'+str(codigo)
+        else:
+            codigo = response.status_code
+            Descrip = response.error_description
+            Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
+    elif response.status_code == 400 or response.status_code == 401:
+        codigo = response.status_code
+        Mensaje = 'Error:'+str(codigo)
+    else:
+        codigo = response.status_code
+        Descrip = response.error_description
+        Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
+    return(Mensaje)
 
 def getSaldo(cuenta, cod_institucion):
     DatosProceso = procesocta.objects.get(proceso_cod_inst=cod_institucion, proceso_inst_inf='CNBV')
