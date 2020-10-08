@@ -764,7 +764,7 @@ h1{
 
 
 
-
+/*
 .menuServicio{
   margin-bottom:25px;
 }
@@ -809,6 +809,13 @@ h1{
   width:100%;
   background:rgba(0, 0, 0, 0);
   z-index:0;
+}*/
+.radio-label{
+  display:inline-block;
+}
+.radio-label>input{
+  margin: 14px 0px;
+  vertical-align: top;
 }
 .radio-label img{
   height:40px;
@@ -822,12 +829,23 @@ h1{
 .alt-account-title{
   width:initial;
   margin-right:10px;
+  margin-bottom:0px;
+  vertical-align: middle;
 }
 
+.menuCuentas{
+  display: block;
+  padding: 0px;
+}
 
 .content{
   max-width:90%;
   margin:0 auto;
+}
+
+.menuServicio input.btn{
+  margin: 0px;
+  vertical-align: middle;
 }
 
 @media (min-width:576px){
@@ -835,18 +853,18 @@ h1{
     max-width:540px;
   }
 
-  .menuServicio select{
+  /*.menuServicio select{
     display:inline-block;
     max-width:350px;
-  }
+  }*/
 }
 @media (min-width:768px){
   .content{
     max-width:720px;
   }
-  .menuServicio form select{
+  /*.menuServicio form select{
     margin-right:20px;
-  }
+  }*/
 }
 @media (min-width:992px){
   .content{
