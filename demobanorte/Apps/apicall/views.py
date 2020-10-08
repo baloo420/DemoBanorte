@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as do_login
-from demobanorte.Apps.apicall.servicesCNBV import getSaldo, DetalleCuenta, DetalleConsentimiento, DevTransacciones, EliminaConsent, logincnbv, refrescarToken
+from demobanorte.Apps.apicall.servicesCNBV import getSaldo, DetalleCuenta, DetalleConsentimiento, DevTransacciones, EliminaConsent, logincnbv, refrescarToken, eliminoconsent
 from demobanorte.Apps.apicall.models import cuentasUsuario, instituciones, MostrarSaldos, DetallesCuenta, DetalleConsent, DetalleTransaccion, procesocta
 from django.contrib.auth.models import User
 import requests
@@ -109,6 +109,7 @@ def home(request):
     return render(request, 'masterpage.html', context)
 #Pagina donde se iniciara el proceso para agregar las cuentas de cualquier Banco que se solicite
 def agregobanco(request):
+    Mensaje = ''
     cliente = User.objects.get()
     Cliente_id = cliente.username
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
@@ -116,7 +117,7 @@ def agregobanco(request):
     for entry in cuentaUsuario:
         numeroCuenta = entry.cuenta_numero
         Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id}
+    context={'Saldos':Json_file, 'Cliente_id':Cliente_id, 'Error_Descr': Mensaje}
     return render(request, 'administroctas.html', context)
 
 def adminbanco(request):
@@ -136,7 +137,7 @@ def adminbanco(request):
 def redirigir(request):
     CuentaCode = request.GET['code']
     Cuentastate = request.GET['state']
-    logincnbv(CuentaCode, Cuentastate)
+    Mensaje = logincnbv(CuentaCode, Cuentastate)
     cliente = User.objects.get()
     Cliente_id = cliente.username
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
@@ -144,12 +145,15 @@ def redirigir(request):
     for entry in cuentaUsuario:
         numeroCuenta = entry.cuenta_numero
         Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id}
+    context={'Saldos':Json_file, 'Cliente_id':Cliente_id, 'Error_Descr': Mensaje}
     return render(request, 'administroctas.html', context)
 
 def eliminocta(request):
     cuenta = request.POST['numerocuenta']
-    EliminaConsent(cuenta)
+    if request.method=='POST' and 'Elimino' in request.POST:
+        Mensaje = EliminaConsent(cuenta)
+    else:
+        Mensaje = eliminoconsent(cuenta)
     cliente = User.objects.get()
     Cliente_id = cliente.username
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
@@ -157,7 +161,7 @@ def eliminocta(request):
     for entry in cuentaUsuario:
         numeroCuenta = entry.cuenta_numero
         Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id}
+    context={'Saldos':Json_file, 'Cliente_id':Cliente_id, 'Error_Descr': Mensaje}
     return render(request, 'administroctas.html', context)
 
 def informacioncuenta(request):

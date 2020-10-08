@@ -3,6 +3,7 @@
 {% load static %}
 <div class="content">
 <h1>Administración de cuentas</h1>
+{{  Error_Descr  }}
 <div class="menuServicio">
     <form method="POST" action="{% url 'adminbanco' %}" class="menuCuentas">
         {% csrf_token %}
@@ -33,6 +34,7 @@
         <input class="btn" type="submit" value="Agregar">
     </form>
 </div>
+<<<<<<< HEAD
 
 
 
@@ -59,6 +61,20 @@
     </div>
 
     <input class="btn" type="submit" value="Eliminar" id="eliminocta_btn">
+=======
+<form method="POST" action="{% url 'eliminocta' %}">
+  {% csrf_token %}
+  <p>
+    {% for entry in Saldos %}
+    <label>
+      <input type="radio" name="numerocuenta" value={{ entry.cuenta_numero }} />
+      {{ entry.cuenta_nickname }} -- {{ entry.cuenta_institucion }} -- {{ entry.cuenta_currency }}</label>
+    <br />
+    {% endfor %}
+  </p>
+  <input class="btn" type="submit" name='Elimino' value="Eliminar">
+  <input class="btn" type="submit" name='Consent' value="Eliminar Consent">
+>>>>>>> 1c76b774d7c7a77dd191963d5b8e1217e8e69209
 </form>
 
 
