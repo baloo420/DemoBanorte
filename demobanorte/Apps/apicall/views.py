@@ -89,7 +89,9 @@ def register(request):
 def home(request):
     cliente = User.objects.get()
     Cliente_id = cliente.username
-    refrescarToken(Cliente_id)
+    Mensaje = refrescarToken(Cliente_id)
+    #AGREAR A LA VISTA
+    print('EL MENSAJE ES:'+Mensaje)
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
     Nombre_Institucion = ''

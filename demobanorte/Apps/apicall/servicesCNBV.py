@@ -22,7 +22,9 @@ def logincnbv(code, state):
     }
 
     response = requests.request("POST", url, headers=headers, data = payload)
-    #print(response.text.encode('utf8'))
+    print('------------------------Access Token-------------------------------')
+    print(response)
+    print('-----------------------------------------------------------------------')
     respuesta = response.json()
     Access_Token = respuesta['access_token']
     id_token = respuesta['id_token']
@@ -38,6 +40,9 @@ def logincnbv(code, state):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
+    print('------------------------Devuelvo las cuentas-------------------------------')
+    print(response)
+    print('-----------------------------------------------------------------------')
     pruebaload = json.loads(response.text)
     for Informacion in pruebaload["Data"]["Account"]:
         Nocuenta = Informacion['AccountId']
@@ -78,6 +83,9 @@ def getSaldo(cuenta, cod_institucion):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
+    print('------------------------Dev Saldo-------------------------------')
+    print(response)
+    print('-----------------------------------------------------------------------')
     if response.status_code == 200:
         pruebaload = json.loads(response.text)
         for Informacion in pruebaload["Data"]["Balance"]:
@@ -102,12 +110,19 @@ def DetalleCuenta(cuenta):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
+    print('------------------------Detalle de Cuenta-------------------------------')
+    print(response)
+    print('-----------------------------------------------------------------------')
     pruebaload = json.loads(response.text)
-    RegistrosCta = []
-    for entry in pruebaload["Data"]["Account"]:
-        RegistrosCta.append(DetallesCuenta(entry['AccountId'], entry['Status'], entry['StatusUpdateDateTime'], entry['Currency'], entry['AccountType'], entry['AccountSubType'], entry['AccountIndicator'], entry['OnboardingType'], entry['Nickname'], entry['OpeningDate'], entry['Servicer']['SchemeName'], entry['Servicer']['Identification']))
+    if response.status_code == 200:
+        RegistrosCta = []
+        for entry in pruebaload["Data"]["Account"]:
+            RegistrosCta.append(DetallesCuenta(entry['AccountId'], entry['Status'], entry['StatusUpdateDateTime'], entry['Currency'], entry['AccountType'], entry['AccountSubType'], entry['AccountIndicator'], entry['OnboardingType'], entry['Nickname'], entry['OpeningDate'], entry['Servicer']['SchemeName'], entry['Servicer']['Identification']))
+    else:
+        codigo = response.status_code
+        Descrip = response.error_description
+        RegistrosCta.append(DetallesCuenta(codigo, Descrip, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '))
     return(RegistrosCta)
-
 def DetalleConsentimiento(cuenta):
 ######Obtiene el acces consents
     cliente = User.objects.get()
@@ -125,25 +140,42 @@ def DetalleConsentimiento(cuenta):
     }
 
     response = requests.request("POST", url, headers=headers, data = payload)
-    respuesta = response.json()
-    Data = respuesta['Data']
-    Consent = Data['ConsentId']
-####se obtiene el detalle
+    print('------------------------Obtengo el Consentimiento-------------------------------')
+    print(response)
+    print('-----------------------------------------------------------------------')
+    if response.status_code == 201:
+        respuesta = response.json()
+        Data = respuesta['Data']
+        Consent = Data['ConsentId']
+    ####se obtiene el detalle
 
-    url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
+        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
 
-    payload = {}
-    headers = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer '+token,
-    }
+        payload = {}
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer '+token,
+        }
 
-    response = requests.request("GET", url, headers=headers, data = payload)
-    pruebaload = json.loads(response.text)
-
-    DetallesCon = []
-    DetallesCon.append(DetalleConsent(pruebaload["Data"]['CreationDateTime'], pruebaload["Data"]['ExpirationDateTime'], pruebaload["Data"]['ConsentId'], pruebaload["Data"]['Status'],pruebaload["Data"]['Permissions']))
-    return(DetallesCon)
+        response = requests.request("GET", url, headers=headers, data = payload)
+        print('------------------------Detalle de Consentimiento-------------------------------')
+        print(response)
+        print('-----------------------------------------------------------------------')
+        if response.status_code == 200:
+            pruebaload = json.loads(response.text)
+            DetallesCon = []
+            DetallesCon.append(DetalleConsent(pruebaload["Data"]['CreationDateTime'], pruebaload["Data"]['ExpirationDateTime'], pruebaload["Data"]['ConsentId'], pruebaload["Data"]['Status'],pruebaload["Data"]['Permissions']))
+            return(DetallesCon)
+        else:
+            codigo = response.status_code
+            Descrip = response.error_description
+            DetallesCon.append(DetalleConsent(codigo, Descrip, ' ', ' ',' '))
+            return(DetallesCon)
+    else:
+        codigo = response.status_code
+        Descrip = response.error_description
+        DetallesCon.append(DetalleConsent(codigo, Descrip, ' ', ' ',' '))
+        return(DetallesCon)
 
 def DevTransacciones(cuenta):
     cliente = User.objects.get()
@@ -161,12 +193,20 @@ def DevTransacciones(cuenta):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
-    pruebaload = json.loads(response.text)
-    Transaccionesdeta = []
-    for entry in pruebaload["Data"]["Transaction"]:
-        Transaccionesdeta.append(DetalleTransaccion(entry['TransactionId'], entry['Status'], entry['BookingDateTime'], entry['TransactionInformation'], entry['Amount']['Amount'], entry['Amount']['Currency']))
-    return(Transaccionesdeta)
-
+    print('------------------------Dev transacciones-------------------------------')
+    print(response)
+    print('-----------------------------------------------------------------------')
+    if response.status_code == 200:
+        pruebaload = json.loads(response.text)
+        Transaccionesdeta = []
+        for entry in pruebaload["Data"]["Transaction"]:
+            Transaccionesdeta.append(DetalleTransaccion(entry['TransactionId'], entry['Status'], entry['BookingDateTime'], entry['TransactionInformation'], entry['Amount']['Amount'], entry['Amount']['Currency']))
+        return(Transaccionesdeta)
+    else:
+        codigo = response.status_code
+        Descrip = response.error_description
+        Transaccionesdeta.append(DetalleTransaccion(codigo, Descrip, ' ', ' ', ' ', ' '))
+        return(Transaccionesdeta)
 def EliminaConsent(cuenta):
     Existe = 'No'
     cliente = User.objects.get()
@@ -174,10 +214,8 @@ def EliminaConsent(cuenta):
     cuentaeliminar = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta, cuenta_inst_inf='CNBV')
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id, cuenta_inst_inf='CNBV', cuenta_institucion=cuentaeliminar.cuenta_institucion)
     for entry in cuentaUsuario:
-        print('Entre al for--------------------------------------------')
         if entry.cuenta_numero != cuenta:
             Existe = 'Si'
-        print('Exite tiene valor de False'+Existe)
     if Existe == 'No':
         DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
         token = DatosProceso.proceso_token
@@ -191,25 +229,49 @@ def EliminaConsent(cuenta):
         }
 
         response = requests.request("POST", url, headers=headers, data = payload)
-        respuesta = response.json()
-        Data = respuesta['Data']
-        Consent = Data['ConsentId']
-        #Con el consent se envia la eliminacion del mismo
-        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
+        if response.status_code == 201:
+            respuesta = response.json()
+            Data = respuesta['Data']
+            Consent = Data['ConsentId']
+            #Con el consent se envia la eliminacion del mismo
+            url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
 
-        payload = {}
-        headers = {
-          'Authorization': 'Bearer '+token,
-          'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
-        }
-        response = requests.request("DELETE", url, headers=headers, data = payload)
-        proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
-        proceliminar.delete()
-        cuentaeliminar.delete()
+            payload = {}
+            headers = {
+              'Authorization': 'Bearer '+token,
+              'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
+            }
+            response = requests.request("DELETE", url, headers=headers, data = payload)
+            print('------------------------Eliminar Consentimiento-------------------------------')
+            print(response)
+            print('-----------------------------------------------------------------------')
+            if response.status_code == 204:
+                proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+                proceliminar.delete()
+                cuentaeliminar.delete()
+                Mensaje = 'Se elimino consentimiento'
+                print('MENSAJE:'+Mensaje)
+                return(Mensaje)
+            else:
+                codigo = response.status_code
+                Descrip = response.error_description
+                Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
+                print('MENSAJE:'+Mensaje)
+                return(Mensaje)
+        else:
+            codigo = response.status_code
+            Descrip = response.error_description
+            Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
+            print('MENSAJE:'+Mensaje)
+            return(Mensaje)
     else:
+        Mensaje = 'Se elimino la cuenta '+cuentaeliminar.cuenta_nickname+' no asi el consentimiento ya que se tiene otra cuenta ligada'
         cuentaeliminar.delete()
+        print('MENSAJE:'+Mensaje)
+        return(Mensaje)
 
 def refrescarToken(client_user):
+    Mensaje = ' '
     client_id = Parametros.objects.get(parametro_id='CLIENT_ID', parametro_proxi='CNBV')
     client_secret = Parametros.objects.get(parametro_id='CLIENT_SEC', parametro_proxi='CNBV')
     Ruta_Redirect = Parametros.objects.get(parametro_id='RUTA_RED', parametro_proxi='CNBV')
@@ -224,11 +286,19 @@ def refrescarToken(client_user):
           'Cookie': 'oauth2_authentication_csrf=MTYwMTkzMDQ2N3xEdi1CQkFFQ180SUFBUkFCRUFBQVB2LUNBQUVHYzNSeWFXNW5EQVlBQkdOemNtWUdjM1J5YVc1bkRDSUFJRGRqTmpFMFlUSmxZVGRtWXpRME0yTTVNREEwTXpFMFlUVmhaakV4WXpGbXyYQXMOqEMA7vX-n-hOsUszVLGKwsXzu6iBDnYDTWHGvg=='
         }
         response = requests.request("POST", url, headers=headers, data = payload)
-
+        print('------------------------Actualizar Token-------------------------------')
+        print(response)
+        print('-----------------------------------------------------------------------')
         respuesta = response.json()
-        Access_Token = respuesta['access_token']
-        id_token = respuesta['id_token']
-        refresh_token = respuesta['refresh_token']
-        entry.proceso_token = Access_Token
-        entry.proceso_refresh_token = refresh_token
-        entry.save()
+        if response.status_code == 200:
+            Access_Token = respuesta['access_token']
+            id_token = respuesta['id_token']
+            refresh_token = respuesta['refresh_token']
+            entry.proceso_token = Access_Token
+            entry.proceso_refresh_token = refresh_token
+            entry.save()
+        else:
+            codigo = response.status_code
+            Descrip = response.error_description
+            Mensaje += 'Error:'+str(codigo)+' Que indica:'+Descrip
+    return(Mensaje)
