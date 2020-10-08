@@ -21,3 +21,14 @@
 #Mac
 .DS_Store
 Demo.zip
+
+#Django cache
+__pycache__
+__pycache__/
+**/__pycache__
+**/__pycache__/
+
+#virtual enviroments
+venv/
+env/
+myenv/
