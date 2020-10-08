@@ -118,6 +118,9 @@ def DetalleCuenta(cuenta):
         RegistrosCta = []
         for entry in pruebaload["Data"]["Account"]:
             RegistrosCta.append(DetallesCuenta(entry['AccountId'], entry['Status'], entry['StatusUpdateDateTime'], entry['Currency'], entry['AccountType'], entry['AccountSubType'], entry['AccountIndicator'], entry['OnboardingType'], entry['Nickname'], entry['OpeningDate'], entry['Servicer']['SchemeName'], entry['Servicer']['Identification']))
+    elif response.status_code == 400 or response.status_code == 401:
+        codigo = response.status_code
+        RegistrosCta.append(DetallesCuenta(codigo, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '))
     else:
         codigo = response.status_code
         Descrip = response.error_description
@@ -165,17 +168,21 @@ def DetalleConsentimiento(cuenta):
             pruebaload = json.loads(response.text)
             DetallesCon = []
             DetallesCon.append(DetalleConsent(pruebaload["Data"]['CreationDateTime'], pruebaload["Data"]['ExpirationDateTime'], pruebaload["Data"]['ConsentId'], pruebaload["Data"]['Status'],pruebaload["Data"]['Permissions']))
-            return(DetallesCon)
+        elif response.status_code == 400 or response.status_code == 401:
+            codigo = response.status_code
+            DetallesCon.append(DetalleConsent(codigo, ' ', ' ', ' ',' '))
         else:
             codigo = response.status_code
             Descrip = response.error_description
             DetallesCon.append(DetalleConsent(codigo, Descrip, ' ', ' ',' '))
-            return(DetallesCon)
+    elif response.status_code == 400 or response.status_code == 401:
+        codigo = response.status_code
+        DetallesCon.append(DetalleConsent(codigo, ' ', ' ', ' ',' '))
     else:
         codigo = response.status_code
         Descrip = response.error_description
         DetallesCon.append(DetalleConsent(codigo, Descrip, ' ', ' ',' '))
-        return(DetallesCon)
+    return(DetallesCon)
 
 def DevTransacciones(cuenta):
     cliente = User.objects.get()
@@ -201,12 +208,14 @@ def DevTransacciones(cuenta):
         Transaccionesdeta = []
         for entry in pruebaload["Data"]["Transaction"]:
             Transaccionesdeta.append(DetalleTransaccion(entry['TransactionId'], entry['Status'], entry['BookingDateTime'], entry['TransactionInformation'], entry['Amount']['Amount'], entry['Amount']['Currency']))
-        return(Transaccionesdeta)
+    elif response.status_code == 400 or response.status_code == 401:
+        codigo = response.status_code
+        Transaccionesdeta.append(DetalleTransaccion(codigo, ' ', ' ', ' ', ' ', ' '))
     else:
         codigo = response.status_code
         Descrip = response.error_description
         Transaccionesdeta.append(DetalleTransaccion(codigo, Descrip, ' ', ' ', ' ', ' '))
-        return(Transaccionesdeta)
+    return(Transaccionesdeta)
 def EliminaConsent(cuenta):
     Existe = 'No'
     cliente = User.objects.get()
@@ -250,25 +259,25 @@ def EliminaConsent(cuenta):
                 proceliminar.delete()
                 cuentaeliminar.delete()
                 Mensaje = 'Se elimino consentimiento'
-                print('MENSAJE:'+Mensaje)
-                return(Mensaje)
+            elif response.status_code == 400 or response.status_code == 401:
+                codigo = response.status_code
+                Mensaje = 'Error:'+str(codigo)
             else:
                 codigo = response.status_code
                 Descrip = response.error_description
                 Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
-                print('MENSAJE:'+Mensaje)
-                return(Mensaje)
+        elif response.status_code == 400 or response.status_code == 401:
+            codigo = response.status_code
+            Mensaje = 'Error:'+str(codigo)
         else:
             codigo = response.status_code
             Descrip = response.error_description
             Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
-            print('MENSAJE:'+Mensaje)
-            return(Mensaje)
     else:
         Mensaje = 'Se elimino la cuenta '+cuentaeliminar.cuenta_nickname+' no asi el consentimiento ya que se tiene otra cuenta ligada'
         cuentaeliminar.delete()
         print('MENSAJE:'+Mensaje)
-        return(Mensaje)
+    return(Mensaje)
 
 def refrescarToken(client_user):
     Mensaje = ' '
@@ -297,6 +306,9 @@ def refrescarToken(client_user):
             entry.proceso_token = Access_Token
             entry.proceso_refresh_token = refresh_token
             entry.save()
+        elif response.status_code == 400 or response.status_code == 401:
+            codigo = response.status_code
+            Mensaje += 'Error:'+str(codigo)+'-'
         else:
             codigo = response.status_code
             Descrip = response.error_description

@@ -91,7 +91,6 @@ def home(request):
     Cliente_id = cliente.username
     Mensaje = refrescarToken(Cliente_id)
     #AGREAR A LA VISTA
-    print('EL MENSAJE ES:'+Mensaje)
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
     Nombre_Institucion = ''
@@ -106,7 +105,7 @@ def home(request):
             Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, 'Consentimiento Vencido', entry.cuenta_institucion, Nombre_Institucion, entry.cuenta_currency, icono))
         else:
             Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, SaldoCuenta, entry.cuenta_institucion, Nombre_Institucion, entry.cuenta_currency, icono))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id}
+    context={'Saldos':Json_file, 'Cliente_id':Cliente_id, 'ErrorActToken':Mensaje}
     return render(request, 'masterpage.html', context)
 #Pagina donde se iniciara el proceso para agregar las cuentas de cualquier Banco que se solicite
 def agregobanco(request):
