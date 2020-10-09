@@ -6,10 +6,8 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from demobanorte.Apps.apicall.models import DetallesCuenta, DetalleConsent, DetalleTransaccion, procesocta
 #####Flujo inicial
-def logincnbv(code, state):
+def logincnbv(code, state, Cliente_id):
     Mensaje= ''
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
     client_id = Parametros.objects.get(parametro_id='CLIENT_ID', parametro_proxi='CNBV')
     client_secret = Parametros.objects.get(parametro_id='CLIENT_SEC', parametro_proxi='CNBV')
     Ruta_Redirect = Parametros.objects.get(parametro_id='RUTA_RED', parametro_proxi='CNBV')
@@ -23,9 +21,6 @@ def logincnbv(code, state):
     }
 
     response = requests.request("POST", url, headers=headers, data = payload)
-    print('------------------------Access Token-------------------------------')
-    print(response)
-    print('-----------------------------------------------------------------------')
     if response.status_code == 200:
         respuesta = response.json()
         Access_Token = respuesta['access_token']
@@ -42,9 +37,6 @@ def logincnbv(code, state):
         }
 
         response = requests.request("GET", url, headers=headers, data = payload)
-        print('------------------------Devuelvo las cuentas-------------------------------')
-        print(response)
-        print('-----------------------------------------------------------------------')
         if response.status_code == 200:
             pruebaload = json.loads(response.text)
             if pruebaload["Data"]["Account"]:
@@ -93,8 +85,8 @@ def logincnbv(code, state):
         Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
     return(Mensaje)
 
-def getSaldo(cuenta, cod_institucion):
-    DatosProceso = procesocta.objects.get(proceso_cod_inst=cod_institucion, proceso_inst_inf='CNBV')
+def getSaldo(cuenta, cod_institucion, Cliente_id):
+    DatosProceso = procesocta.objects.get(proceso_cod_inst=cod_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
     token = DatosProceso.proceso_token
     url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/accounts/"+cuenta+"/balances"
 
@@ -105,9 +97,6 @@ def getSaldo(cuenta, cod_institucion):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
-    print('------------------------Dev Saldo-------------------------------')
-    print(response)
-    print('-----------------------------------------------------------------------')
     if response.status_code == 200:
         pruebaload = json.loads(response.text)
         for Informacion in pruebaload["Data"]["Balance"]:
@@ -116,11 +105,9 @@ def getSaldo(cuenta, cod_institucion):
     else:
         return('NoOK')
 
-def DetalleCuenta(cuenta):
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
+def DetalleCuenta(cuenta, Cliente_id):
     cuentaUsuario = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta)
-    DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaUsuario.cuenta_institucion, proceso_inst_inf='CNBV')
+    DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaUsuario.cuenta_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
     token = DatosProceso.proceso_token
 
     url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/accounts/"+cuenta
@@ -132,9 +119,6 @@ def DetalleCuenta(cuenta):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
-    print('------------------------Detalle de Cuenta-------------------------------')
-    print(response)
-    print('-----------------------------------------------------------------------')
     pruebaload = json.loads(response.text)
     if response.status_code == 200:
         RegistrosCta = []
@@ -148,12 +132,10 @@ def DetalleCuenta(cuenta):
         Descrip = response.error_description
         RegistrosCta.append(DetallesCuenta(codigo, Descrip, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '))
     return(RegistrosCta)
-def DetalleConsentimiento(cuenta):
+def DetalleConsentimiento(cuenta, Cliente_id):
 ######Obtiene el acces consents
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
     cuentaUsuario = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta)
-    DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaUsuario.cuenta_institucion, proceso_inst_inf='CNBV')
+    DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaUsuario.cuenta_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
     token = DatosProceso.proceso_token
 
     url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
@@ -165,9 +147,6 @@ def DetalleConsentimiento(cuenta):
     }
 
     response = requests.request("POST", url, headers=headers, data = payload)
-    print('------------------------Obtengo el Consentimiento-------------------------------')
-    print(response)
-    print('-----------------------------------------------------------------------')
     if response.status_code == 201:
         respuesta = response.json()
         Data = respuesta['Data']
@@ -183,9 +162,6 @@ def DetalleConsentimiento(cuenta):
         }
 
         response = requests.request("GET", url, headers=headers, data = payload)
-        print('------------------------Detalle de Consentimiento-------------------------------')
-        print(response)
-        print('-----------------------------------------------------------------------')
         if response.status_code == 200:
             pruebaload = json.loads(response.text)
             DetallesCon = []
@@ -206,11 +182,9 @@ def DetalleConsentimiento(cuenta):
         DetallesCon.append(DetalleConsent(codigo, Descrip, ' ', ' ',' '))
     return(DetallesCon)
 
-def DevTransacciones(cuenta):
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
+def DevTransacciones(cuenta, Cliente_id):
     cuentaUsuario = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta)
-    DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaUsuario.cuenta_institucion, proceso_inst_inf='CNBV')
+    DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaUsuario.cuenta_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
     token = DatosProceso.proceso_token
 
     url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/accounts/"+cuenta+"/transactions"
@@ -222,9 +196,6 @@ def DevTransacciones(cuenta):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
-    print('------------------------Dev transacciones-------------------------------')
-    print(response)
-    print('-----------------------------------------------------------------------')
     if response.status_code == 200:
         pruebaload = json.loads(response.text)
         Transaccionesdeta = []
@@ -238,17 +209,15 @@ def DevTransacciones(cuenta):
         Descrip = response.error_description
         Transaccionesdeta.append(DetalleTransaccion(codigo, Descrip, ' ', ' ', ' ', ' '))
     return(Transaccionesdeta)
-def EliminaConsent(cuenta):
+def EliminaConsent(cuenta, Cliente_id):
     Existe = 'No'
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
     cuentaeliminar = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta, cuenta_inst_inf='CNBV')
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id, cuenta_inst_inf='CNBV', cuenta_institucion=cuentaeliminar.cuenta_institucion)
     for entry in cuentaUsuario:
         if entry.cuenta_numero != cuenta:
             Existe = 'Si'
     if Existe == 'No':
-        DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+        DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
         token = DatosProceso.proceso_token
         #Se va por el consent_Id
         url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
@@ -273,9 +242,6 @@ def EliminaConsent(cuenta):
               'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
             }
             response = requests.request("DELETE", url, headers=headers, data = payload)
-            print('------------------------Eliminar Consentimiento-------------------------------')
-            print(response)
-            print('-----------------------------------------------------------------------')
             if response.status_code == 204:
                 proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
                 proceliminar.delete()
@@ -317,9 +283,6 @@ def refrescarToken(client_user):
           'Cookie': 'oauth2_authentication_csrf=MTYwMTkzMDQ2N3xEdi1CQkFFQ180SUFBUkFCRUFBQVB2LUNBQUVHYzNSeWFXNW5EQVlBQkdOemNtWUdjM1J5YVc1bkRDSUFJRGRqTmpFMFlUSmxZVGRtWXpRME0yTTVNREEwTXpFMFlUVmhaakV4WXpGbXyYQXMOqEMA7vX-n-hOsUszVLGKwsXzu6iBDnYDTWHGvg=='
         }
         response = requests.request("POST", url, headers=headers, data = payload)
-        print('------------------------Actualizar Token-------------------------------')
-        print(response)
-        print('-----------------------------------------------------------------------')
         respuesta = response.json()
         if response.status_code == 200:
             Access_Token = respuesta['access_token']
@@ -337,17 +300,15 @@ def refrescarToken(client_user):
             Mensaje += 'Error:'+str(codigo)+' Que indica:'+Descrip
     return(Mensaje)
 
-def eliminoconsent(cuenta):
+def eliminoconsent(cuenta, Cliente_id):
     Existe = 'No'
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
     cuentaeliminar = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta, cuenta_inst_inf='CNBV')
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id, cuenta_inst_inf='CNBV', cuenta_institucion=cuentaeliminar.cuenta_institucion)
     for entry in cuentaUsuario:
         if entry.cuenta_numero != cuenta:
             Existe = 'No'
     if Existe == 'No':
-        DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+        DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
         token = DatosProceso.proceso_token
         #Se va por el consent_Id
         url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
@@ -372,9 +333,6 @@ def eliminoconsent(cuenta):
               'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
             }
             response = requests.request("DELETE", url, headers=headers, data = payload)
-            print('------------------------Eliminar Consentimiento-------------------------------')
-            print(response)
-            print('-----------------------------------------------------------------------')
             if response.status_code == 204:
                 #proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
                 #proceliminar.delete()
