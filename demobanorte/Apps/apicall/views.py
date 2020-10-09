@@ -16,55 +16,26 @@ import random
 #Pantalla de inicio para usuarios
 def login(request):
     # Creamos el formulario de autenticación vacío
-    form2 = UserCreationForm()
     form = AuthenticationForm()
     if request.method == "POST":
-        # Añadimos los datos recibidos al formulario
-        x = request.POST.get('password1', None)
-        y = request.POST.get('password', None)
-        if y != None:
-            form = AuthenticationForm(data=request.POST)
-            # Si el formulario es válido...
-            if form.is_valid():
-                # Recuperamos las credenciales validadas
-                username = form.cleaned_data['username']
-                password = form.cleaned_data['password']
-                # Verificamos las credenciales del usuario
-                user = authenticate(username=username, password=password)
-                # Si existe un usuario con ese nombre y contraseña
-                if user is not None:
-                    # Hacemos el login manualmente
-                    do_login(request, user)
-                    # Y le redireccionamos a la portada
-                    return redirect('home')
-                # Añadimos los datos recibidos al formulario
-            else:
-                print('-----------Entre al else por que no es valido el form---------------')
-                return render(request, "login.html", {'form': form, 'form2': form2})
-        elif x != None:
-            print('-----------Ente para agregar usuario---------------')
-            form2 = UserCreationForm(data=request.POST)
-            print(form2)
-            print('--------------------------------------------------')
-            if form2.is_valid():
-                print('-----------Es valido el form---------------')
-                # Creamos la nueva cuenta de usuario
-                user = form2.save()
-                # Si el usuario se crea correctamente
-                if user is not None:
-                    # Hacemos el login manualmente
-                    print('-----------if del usuario no vacio---------------')
-                    do_login(request, user)
-                    # Y le redireccionamos a la portada
-                    return redirect('login/')
-                    #return render(request, "login.html", {'form': form, 'form2': form2})
-            else:
-                print('-----------Entre al else por que no es valido el form---------------')
-                return render(request, "login.html", {'form': form, 'form2': form2})
-    # Creamos el formulario de autenticación vacío
-    else:
-        # Si llegamos al final renderizamos el formulario
-        return render(request, "login.html", {'form': form, 'form2': form2})
+    # Añadimos los datos recibidos al formulario
+        form = AuthenticationForm(data=request.POST)
+        # Si el formulario es válido...
+        if form.is_valid():
+            # Recuperamos las credenciales validadas
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            # Verificamos las credenciales del usuario
+            user = authenticate(username=username, password=password)
+            # Si existe un usuario con ese nombre y contraseña
+            if user is not None:
+                # Hacemos el login manualmente
+                do_login(request, user)
+                # Y le redireccionamos a la portada
+                return redirect('home')
+            # Añadimos los datos recibidos al formulario
+    # Si llegamos al final renderizamos el formulario
+    return render(request, "login.html", {'form': form})
 #registro de nuevos usuarios
 def register(request):
     # Creamos el formulario de autenticación vacío
@@ -81,15 +52,16 @@ def register(request):
                 # Hacemos el login manualmente
                 do_login(request, user)
                 # Y le redireccionamos a la portada
-                return redirect('login/')
+                return redirect('login')
 
     # Si llegamos al final renderizamos el formulario
     return render(request, "register.html", {'form': form})
 # Llamado a la pagina de inicio de la aplicacion
 def home(request):
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
-    Mensaje = refrescarToken(Cliente_id)
+    Cliente_id = request.user.get_username ()
+    print('EL USUARIO DENTRO ES'+str(Cliente_id))
+    #Cliente_id = request.GET['username']
+    Mensaje = refrescarToken('elopez')
     #AGREAR A LA VISTA
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
@@ -100,29 +72,27 @@ def home(request):
         if Institucion_desc:
             Nombre_Institucion = Institucion_desc.institucion_nombre
             icono = "img/logo_"+Institucion_desc.institucion_id+".svg"
-        SaldoCuenta = getSaldo(numeroCuenta, entry.cuenta_institucion)
+        SaldoCuenta = getSaldo(numeroCuenta, entry.cuenta_institucion, Cliente_id)
         if SaldoCuenta == 'NoOK':
             Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, 'Consentimiento Vencido', entry.cuenta_institucion, Nombre_Institucion, entry.cuenta_currency, icono))
         else:
             Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, SaldoCuenta, entry.cuenta_institucion, Nombre_Institucion, entry.cuenta_currency, icono))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id, 'ErrorActToken':Mensaje}
+    context={'Saldos':Json_file, 'ErrorActToken':Mensaje}
     return render(request, 'masterpage.html', context)
 #Pagina donde se iniciara el proceso para agregar las cuentas de cualquier Banco que se solicite
 def agregobanco(request):
     Mensaje = ''
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
+    Cliente_id = request.user.get_username ()
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
     for entry in cuentaUsuario:
         numeroCuenta = entry.cuenta_numero
         Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id, 'Error_Descr': Mensaje}
+    context={'Saldos':Json_file, 'Error_Descr': Mensaje}
     return render(request, 'administroctas.html', context)
 
 def adminbanco(request):
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
+    Cliente_id = request.user.get_username ()
     institucion = request.POST['Institucion']
     Ruta = 'https://oauth2.ofpilot.com/hydra-public/oauth2/auth?client_id='
     Client_id = 'z104dwltrg5e2cteoskjy5j2f20w0pte5cex3k0z'
@@ -137,63 +107,57 @@ def adminbanco(request):
 def redirigir(request):
     CuentaCode = request.GET['code']
     Cuentastate = request.GET['state']
-    Mensaje = logincnbv(CuentaCode, Cuentastate)
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
+    Cliente_id = request.user.get_username ()
+    Mensaje = logincnbv(CuentaCode, Cuentastate, Cliente_id)
+    Cliente_id = request.user.get_username ()
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
     for entry in cuentaUsuario:
         numeroCuenta = entry.cuenta_numero
         Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id, 'Error_Descr': Mensaje}
+    context={'Saldos':Json_file, 'Error_Descr': Mensaje}
     return render(request, 'administroctas.html', context)
 
 def eliminocta(request):
+    Cliente_id = request.user.get_username ()
     cuenta = request.POST['numerocuenta']
     if request.method=='POST' and 'Elimino' in request.POST:
-        Mensaje = EliminaConsent(cuenta)
+        Mensaje = EliminaConsent(cuenta, Cliente_id)
     else:
-        Mensaje = eliminoconsent(cuenta)
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
+        Mensaje = eliminoconsent(cuenta, Cliente_id)
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
     for entry in cuentaUsuario:
         numeroCuenta = entry.cuenta_numero
         Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
-    context={'Saldos':Json_file, 'Cliente_id':Cliente_id, 'Error_Descr': Mensaje}
+    context={'Saldos':Json_file, 'Error_Descr': Mensaje}
     return render(request, 'administroctas.html', context)
 
 def informacioncuenta(request):
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
+    Cliente_id = request.user.get_username ()
     cuentasusuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
-    context={'cuentasusuario':cuentasusuario, 'Cliente_id':Cliente_id}
+    context={'cuentasusuario':cuentasusuario}
     return render(request, 'detallecuenta.html', context)
 
 def devinformacion(request):
     CuentaDetalle = request.POST['cuentadetalle']
     serviciosolicitado = request.POST['serviciosolicitado']
-    cliente = User.objects.get()
-    Cliente_id = cliente.username
+    Cliente_id = request.user.get_username ()
     cuentausuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     if serviciosolicitado == 'detalle':
-        DetallesCuenta = DetalleCuenta(CuentaDetalle)
+        DetallesCuenta = DetalleCuenta(CuentaDetalle, Cliente_id)
         context={'DetalleCuenta':DetallesCuenta, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
     elif serviciosolicitado == 'consent':
-        DetallesCon = DetalleConsentimiento(CuentaDetalle)
+        DetallesCon = DetalleConsentimiento(CuentaDetalle, Cliente_id)
         context={'DetallesConsent':DetallesCon, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
     elif serviciosolicitado == 'transacciones':
-        TransaccionesCuenta = DevTransacciones(CuentaDetalle)
+        TransaccionesCuenta = DevTransacciones(CuentaDetalle, Cliente_id)
         context={'TransaccionesCuenta':TransaccionesCuenta, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
     else:
-        context = {'Cliente_id':Cliente_id}
+        context = {}
     return render(request, 'detallecuenta.html', context)
 
 def logout(request):
     logout(request)
     return redirect('https://www.banorte.com/wps/portal/banorte/Home/inicio')
     # Redirect to a success page.
-
-def logout2(request):
-    logout(request)
