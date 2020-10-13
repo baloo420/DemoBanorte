@@ -59,9 +59,8 @@ def register(request):
 # Llamado a la pagina de inicio de la aplicacion
 def home(request):
     Cliente_id = request.user.get_username ()
-    print('EL USUARIO DENTRO ES'+str(Cliente_id))
     #Cliente_id = request.GET['username']
-    Mensaje = refrescarToken('elopez')
+    Mensaje = refrescarToken('Cliente_id')
     #AGREAR A LA VISTA
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
