@@ -38,12 +38,15 @@ window.onload = function() {
 
 
 
-
+	/*
 	var tarjeta = document.getElementsByClassName('tarjeta');
 	console.log("Tarjeta: "+tarjeta);
-	tarjeta.addEventListener('click', function(event){
-		console.log("Tarjeta click");
-	});
+	if(tarjeta.length>0){
+		tarjeta.addEventListener('click', function(event){
+			console.log("Tarjeta click");
+		});
+	}
+	*/
 
 }
 
