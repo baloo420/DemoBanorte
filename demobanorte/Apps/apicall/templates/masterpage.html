@@ -1,17 +1,18 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<style>
-	.log-out{
-		display: inline-block;
-		height: 64px;
-		width: 64px;
-		background-image: url("img/boton_logout.svg");
-		background-repeat: no-repeat;
-		background-size: 100%;
-		margin-top: 10px;
-	}
+		.log-out {
+			display: inline-block;
+			height: 64px;
+			width: 64px;
+			background-image: url("img/boton_logout.svg");
+			background-repeat: no-repeat;
+			background-size: 100%;
+			margin-top: 10px;
+		}
 	</style>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,12 +20,14 @@
 	<link rel="stylesheet" href='{% static 'css/style.css' %}' />
 	<title>Consumo Cuentas</title>
 </head>
+
 <body>
 	<div class="main-container">
 		<div class="header-top">
 			<div class="content">
 				<div class="columns2A">
-					<a href="{% url 'logout' %}" class="logo"><span style="opacity:0!important;">Pagina inicio</span></a>
+					<a href="{% url 'logout' %}" class="logo"><span style="opacity:0!important;">Pagina
+							inicio</span></a>
 					<div class="menu-container">
 						<a class="main-menu" href="{% url 'home' %}">Home</a>
 						<a class="main-menu" href="{% url 'agregobanco' %}">Administrar Cuentas</a>
@@ -41,34 +44,45 @@
 		</div>
 		{% block content %}
 		{{  ErrorActToken  }}
-		<div class="content-container">
-			<div class="alt-accounts">
-				{% for entry in Saldos %}
+		<div class="content">
+			<div class="content-container">
+				<h1>Título</h1>
+				{% if Saldos %}
+				<div>
+					<p>Instruccciones</p>
+				</div>
+				<div class="alt-accounts">
+					{% for entry in Saldos %}
 					<div class="alt-account content-box">
-						<div class="alt-account-title">
-							<div class="alt-account-bank">
-								<h4>{{ entry.institucion_descripcion }}</h4>
-							</div>
-							<div class="alt-account-icon">
-								<img src='{% static entry.cuenta_icono %}' alt="Logo Banco Banregio">
-							</div>
-							<div class="alt-account-details">
-								<div class="alt-account-name">
-									<h5>{{ entry.cuenta_nickname }}</h5>
-								</div>
-								<div class="alt-account-funds">
-									<p class="alt-account-currency">{{ entry.cuenta_currency }}</p>
-									<p><span class="money-symbol">$</span>{{ entry.cuenta_saldo }}</p>
-								</div>
-							</div>
+						<div class="alt-account-icon">
+							<img src='{% static entry.cuenta_icono %}' alt="Logo Banco Banregio">
+						</div>
+						<div class="alt-account-bank">
+							<h4>{{ entry.institucion_descripcion }}</h4>
+						</div>
+						<div class="alt-account-name">
+							<h5>{{ entry.cuenta_nickname }}</h5>
+						</div>
+						<div class="alt-account-funds">
+							<p class="alt-account-currency">{{ entry.cuenta_currency }}</p>
+							{% if entry.cuenta_saldo == "Consentimiento Vencido" %}
+								<p class="consentimiento-vencido"><a href="{% url 'agregobanco' %}">{{ entry.cuenta_saldo }}</a></p>
+							{% else %}
+								<p><span class="money-symbol">$</span>{{ entry.cuenta_saldo }}</p>
+							{% endif %}
 						</div>
 					</div>
-				{% endfor %}
+					{% endfor %}
+				</div>
+				{% else %}
+				<p>No hay cuentas</p>
+				{% endif %}
 			</div>
-		 </div>
+		</div>
 	</div>
 	{% endblock %}
-<script src="{% static 'app.js' %}"></script>
-<script src="{% static 'script.js' %}"></script>
+	<script src="{% static 'app.js' %}"></script>
+	<script src="{% static 'script.js' %}"></script>
 </body>
+
 </html>
