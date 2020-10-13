@@ -68,6 +68,9 @@ def home(request):
     Nombre_Institucion = ''
     for entry in cuentaUsuario:
         numeroCuenta = entry.cuenta_numero
+        print('-------------------------Institucion----------------------------')
+        print('El codigo del banco es'+entry.cuenta_institucion)
+        print('-----------------------------------------------------')
         Institucion_desc = instituciones.objects.get(institucion_codigo=entry.cuenta_institucion)
         if Institucion_desc:
             Nombre_Institucion = Institucion_desc.institucion_nombre
@@ -86,8 +89,10 @@ def agregobanco(request):
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
     for entry in cuentaUsuario:
+        Institucion_desc = instituciones.objects.get(institucion_codigo=entry.cuenta_institucion)
+        icono = "img/logo_"+Institucion_desc.institucion_id+".svg"
         numeroCuenta = entry.cuenta_numero
-        Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, ""))
+        Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, icono))
     context={'Saldos':Json_file, 'Error_Descr': Mensaje}
     return render(request, 'administroctas.html', context)
 
