@@ -27,48 +27,69 @@ def logincnbv(code, state, Cliente_id):
         id_token = respuesta['id_token']
         refresh_token = respuesta['refresh_token']
         scope = respuesta['scope']
-    #En esta parte obtenemos las cuentas del usuario
-        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/accounts"
+        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
 
-        payload = {}
+        payload = "{  \"Data\":{    \"TransactionToDateTime\":\"2020-10-23T06:44:05.618Z\",    \"ExpirationDateTime\":\"2021-10-23T06:44:05.618Z\",    \"Permissions\":[\"ReadAccountsBasic\",\"ReadAccountsDetail\",\"ReadBalances\",\"ReadTransactionsBasic\",\"ReadTransactionsDebits\",\"ReadTransactionsDetail\"],    \"TransactionFromDateTime\":\"2020-10-23T06:44:05.618Z\"  }}"
         headers = {
+          'Content-Type': 'application/json',
           'Authorization': 'Bearer '+Access_Token,
-          'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
         }
 
-        response = requests.request("GET", url, headers=headers, data = payload)
-        if response.status_code == 200:
-            pruebaload = json.loads(response.text)
-            if pruebaload["Data"]["Account"]:
-                for Informacion in pruebaload["Data"]["Account"]:
-                    Nocuenta = Informacion['AccountId']
-                    Nickname = Informacion['Nickname']
-                    Currency = Informacion['Currency']
-                    Status = Informacion['Status']
-                    institucion = Informacion['Servicer']['Identification']
-                    r = cuentasUsuario(
-                    cuenta_numero = Nocuenta,
-                    cuenta_user = Cliente_id,
-                    cuenta_institucion = institucion,
-                    cuenta_nickname = Nickname,
-                    cuenta_currency = Currency,
-                    cuenta_status = Status,
-                    cuenta_id_token = id_token,
-                    cuenta_scope = scope,
-                    cuenta_inst_inf = 'CNBV'
+        response = requests.request("POST", url, headers=headers, data = payload)
+        if response.status_code == 201:
+            respuesta = response.json()
+            Data = respuesta['Data']
+            Consent = Data['ConsentId']
+        #En esta parte obtenemos las cuentas del usuario
+            url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/accounts"
+
+            payload = {}
+            headers = {
+              'Authorization': 'Bearer '+Access_Token,
+              'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
+            }
+
+            response = requests.request("GET", url, headers=headers, data = payload)
+            if response.status_code == 200:
+                pruebaload = json.loads(response.text)
+                if pruebaload["Data"]["Account"]:
+                    for Informacion in pruebaload["Data"]["Account"]:
+                        Nocuenta = Informacion['AccountId']
+                        Nickname = Informacion['Nickname']
+                        Currency = Informacion['Currency']
+                        Status = Informacion['Status']
+                        institucion = Informacion['Servicer']['Identification']
+                        r = cuentasUsuario(
+                        cuenta_numero = Nocuenta,
+                        cuenta_user = Cliente_id,
+                        cuenta_institucion = institucion,
+                        cuenta_nickname = Nickname,
+                        cuenta_currency = Currency,
+                        cuenta_status = Status,
+                        cuenta_id_token = id_token,
+                        cuenta_scope = scope,
+                        cuenta_inst_inf = 'CNBV'
+                        )
+                        r.save()
+                    s = procesocta(
+                    proceso_user = Cliente_id,
+                    proceso_token = Access_Token,
+                    proceso_refresh_token = refresh_token,
+                    proceso_inst_inf = 'CNBV',
+                    proceso_cod_inst = institucion,
+                    proceso_consent = Consent
                     )
-                    r.save()
-                s = procesocta(
-                proceso_user = Cliente_id,
-                proceso_token = Access_Token,
-                proceso_refresh_token = refresh_token,
-                proceso_inst_inf = 'CNBV',
-                proceso_cod_inst = institucion
-                )
-                s.save()
-                Mensaje = 'Se agregaron las cuentas correctamente'
+                    s.save()
+                    Mensaje = 'Se agregaron las cuentas correctamente'
+                else:
+                    Mensaje = 'No se recibieron cuentas relacionadas al usuario o no se le dio consentimiento a ninguna cuenta'
+            elif response.status_code == 400 or response.status_code == 401:
+                codigo = response.status_code
+                Mensaje = 'Error:'+str(codigo)
             else:
-                Mensaje = 'No se recibieron cuentas relacionadas al usuario o no se le dio consentimiento a ninguna cuenta'
+                codigo = response.status_code
+                Descrip = response.error_description
+                Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
         elif response.status_code == 400 or response.status_code == 401:
             codigo = response.status_code
             Mensaje = 'Error:'+str(codigo)
@@ -137,42 +158,22 @@ def DetalleConsentimiento(cuenta, Cliente_id):
     cuentaUsuario = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta)
     DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaUsuario.cuenta_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
     token = DatosProceso.proceso_token
+    Consent = DatosProceso.proceso_consent
+    ####se obtiene el detalle
 
-    url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
+    url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
 
-    payload = "{  \"Data\":{    \"TransactionToDateTime\":\"2020-10-23T06:44:05.618Z\",    \"ExpirationDateTime\":\"2021-10-23T06:44:05.618Z\",    \"Permissions\":[\"ReadAccountsBasic\",\"ReadAccountsDetail\",\"ReadBalances\",\"ReadTransactionsBasic\",\"ReadTransactionsDebits\",\"ReadTransactionsDetail\"],    \"TransactionFromDateTime\":\"2020-10-23T06:44:05.618Z\"  }}"
+    payload = {}
     headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer '+token,
     }
 
-    response = requests.request("POST", url, headers=headers, data = payload)
-    if response.status_code == 201:
-        respuesta = response.json()
-        Data = respuesta['Data']
-        Consent = Data['ConsentId']
-    ####se obtiene el detalle
-
-        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
-
-        payload = {}
-        headers = {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer '+token,
-        }
-
-        response = requests.request("GET", url, headers=headers, data = payload)
-        if response.status_code == 200:
-            pruebaload = json.loads(response.text)
-            DetallesCon = []
-            DetallesCon.append(DetalleConsent(pruebaload["Data"]['CreationDateTime'], pruebaload["Data"]['ExpirationDateTime'], pruebaload["Data"]['ConsentId'], pruebaload["Data"]['Status'],pruebaload["Data"]['Permissions']))
-        elif response.status_code == 400 or response.status_code == 401:
-            codigo = response.status_code
-            DetallesCon.append(DetalleConsent(codigo, ' ', ' ', ' ',' '))
-        else:
-            codigo = response.status_code
-            Descrip = response.error_description
-            DetallesCon.append(DetalleConsent(codigo, Descrip, ' ', ' ',' '))
+    response = requests.request("GET", url, headers=headers, data = payload)
+    if response.status_code == 200:
+        pruebaload = json.loads(response.text)
+        DetallesCon = []
+        DetallesCon.append(DetalleConsent(pruebaload["Data"]['CreationDateTime'], pruebaload["Data"]['ExpirationDateTime'], pruebaload["Data"]['ConsentId'], pruebaload["Data"]['Status'],pruebaload["Data"]['Permissions']))
     elif response.status_code == 400 or response.status_code == 401:
         codigo = response.status_code
         DetallesCon.append(DetalleConsent(codigo, ' ', ' ', ' ',' '))
@@ -219,41 +220,21 @@ def EliminaConsent(cuenta, Cliente_id):
     if Existe == 'No':
         DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
         token = DatosProceso.proceso_token
-        #Se va por el consent_Id
-        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
-
-        payload = "{  \"Data\":{    \"TransactionToDateTime\":\"2020-10-23T06:44:05.618Z\",    \"ExpirationDateTime\":\"2021-10-23T06:44:05.618Z\",    \"Permissions\":[\"ReadAccountsBasic\",\"ReadAccountsDetail\",\"ReadBalances\",\"ReadTransactionsBasic\",\"ReadTransactionsDebits\",\"ReadTransactionsDetail\"],    \"TransactionFromDateTime\":\"2020-10-23T06:44:05.618Z\"  }}"
-        headers = {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer '+token,
-        }
-
-        response = requests.request("POST", url, headers=headers, data = payload)
-        if response.status_code == 201:
-            respuesta = response.json()
-            Data = respuesta['Data']
-            Consent = Data['ConsentId']
+        Consent = DatosProceso.proceso_consent
             #Con el consent se envia la eliminacion del mismo
-            url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
+        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
 
-            payload = {}
-            headers = {
-              'Authorization': 'Bearer '+token,
-              'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
-            }
-            response = requests.request("DELETE", url, headers=headers, data = payload)
-            if response.status_code == 204:
-                proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
-                proceliminar.delete()
-                cuentaeliminar.delete()
-                Mensaje = 'Se elimino consentimiento'
-            elif response.status_code == 400 or response.status_code == 401:
-                codigo = response.status_code
-                Mensaje = 'Error:'+str(codigo)
-            else:
-                codigo = response.status_code
-                Descrip = response.error_description
-                Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
+        payload = {}
+        headers = {
+          'Authorization': 'Bearer '+token,
+          'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
+        }
+        response = requests.request("DELETE", url, headers=headers, data = payload)
+        if response.status_code == 204:
+            proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+            proceliminar.delete()
+            cuentaeliminar.delete()
+            Mensaje = 'Se elimino consentimiento y la cuenta '+cuentaeliminar.cuenta_nickname
         elif response.status_code == 400 or response.status_code == 401:
             codigo = response.status_code
             Mensaje = 'Error:'+str(codigo)
@@ -310,41 +291,19 @@ def eliminoconsent(cuenta, Cliente_id):
     if Existe == 'No':
         DatosProceso = procesocta.objects.get(proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV', proceso_user=Cliente_id)
         token = DatosProceso.proceso_token
-        #Se va por el consent_Id
-        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents"
+        Consent = DatosProceso.proceso_consent
+            #Con el consent se envia la eliminacion del mismo
+        url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
 
-        payload = "{  \"Data\":{    \"TransactionToDateTime\":\"2020-10-23T06:44:05.618Z\",    \"ExpirationDateTime\":\"2021-10-23T06:44:05.618Z\",    \"Permissions\":[\"ReadAccountsBasic\",\"ReadAccountsDetail\",\"ReadBalances\",\"ReadTransactionsBasic\",\"ReadTransactionsDebits\",\"ReadTransactionsDetail\"],    \"TransactionFromDateTime\":\"2020-10-23T06:44:05.618Z\"  }}"
+        payload = {}
         headers = {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer '+token,
+          'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
         }
-
-        response = requests.request("POST", url, headers=headers, data = payload)
-        if response.status_code == 201:
-            respuesta = response.json()
-            Data = respuesta['Data']
-            Consent = Data['ConsentId']
-            #Con el consent se envia la eliminacion del mismo
-            url = "https://apisandbox.ofpilot.com/mx-open-finance/v0.0.1/account-access-consents/"+Consent
-
-            payload = {}
-            headers = {
-              'Authorization': 'Bearer '+token,
-              'Cookie': 'JSESSIONID=1e7rpb6c1xah11mbdrh00adr0p'
-            }
-            response = requests.request("DELETE", url, headers=headers, data = payload)
-            if response.status_code == 204:
-                #proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
-                #proceliminar.delete()
-                #cuentaeliminar.delete()
-                Mensaje = 'Se elimino consentimiento'
-            elif response.status_code == 400 or response.status_code == 401:
-                codigo = response.status_code
-                Mensaje = 'Error:'+str(codigo)
-            else:
-                codigo = response.status_code
-                Descrip = response.error_description
-                Mensaje = 'Error:'+str(codigo)+' Que indica:'+Descrip
+        response = requests.request("DELETE", url, headers=headers, data = payload)
+        if response.status_code == 204:
+            Mensaje = 'Se elimino consentimiento'
         elif response.status_code == 400 or response.status_code == 401:
             codigo = response.status_code
             Mensaje = 'Error:'+str(codigo)

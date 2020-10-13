@@ -48,6 +48,7 @@ class procesocta(models.Model):
     proceso_refresh_token = models.CharField('Refresh Token',max_length=100, null=False)
     proceso_inst_inf = models.CharField('Proveedor de Informacion',max_length=40, null=False)
     proceso_cod_inst = models.CharField('Codigo Institucion',max_length=30, null=False)
+    proceso_consent =  models.CharField('Id de Consentimiento',max_length=100, null=False)
 
     def __str__(self):
         txt = "{0}, {1}, {2}"
