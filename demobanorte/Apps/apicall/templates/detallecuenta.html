@@ -2,24 +2,28 @@
 {% block content %}
 {% load static %}
 <div class="content">
-  <h1>Pagina de solicitud de informacion de la cuenta</h1>
+  <h1>Información de Cuentas</h1>
 
   <div class="menuServicio">
     <form method="POST" action="{% url 'devinformacion' %}">
       {% csrf_token %}
+      <div class="custom-select">
+        <p>Selecciona un servicio</p>
       <select name="serviciosolicitado">
-        <option value="null">Selecciona Servicio</option>
         <option value="detalle">Detalle de la cuenta</option>
         <option value="consent">Permisos otorgados a la cuenta</option>
         <option value="transacciones">Transacciones</option>
       </select>
+    </div>
+      <div class="custom-select">
+        <p>Selecciona una cuenta</p>
       <select name="cuentadetalle" >
-        <option value="null">Selecciona Cuenta</option>
         {% for entry in cuentasusuario %}
           <option value={{ entry.cuenta_numero }}>{{ entry.cuenta_nickname }}</option>
         {% endfor %}
       </select>
-        <input class="btn" type="submit" value="Confirma">
+    </div>
+        <input class="btn" type="submit" value="Confirmar">
     </form>
   </div>
   <div class="accounts-transactions content-box">
@@ -31,23 +35,23 @@
         <table width="100%">
           {% for entry in DetalleCuenta %}
               <tr class="table-row">
-                  <th>Alias de la cuenta</th>
+                  <th class="info-account">Alias de la cuenta</th>
                   <td>{{ entry.Nickname }}</td>
               </tr>
               <tr class="table-row">
-                  <th>Estatus</th>
+                  <th class="info-account">Estatus</th>
                   <td>{{ entry.Status }}</td>
               </tr>
               <tr class="table-row">
-                  <th>Tipo de cuenta</th>
+                  <th class="info-account">Tipo de cuenta</th>
                   <td>{{ entry.AccountType }}</td>
               </tr>
               <tr class="table-row">
-                  <th>Fecha de apertura</th>
+                  <th class="info-account">Fecha de apertura</th>
                   <td>{{ entry.OpeningDate }}</td>
               </tr>
               <tr class="table-row">
-                  <th>Moneda</th>
+                  <th class="info-account">Moneda</th>
                   <td>{{ entry.Currency }}</td>
               </tr>
             {% endfor %}
@@ -62,19 +66,19 @@
           <table width="100%">
               {% for entry in DetallesConsent %}
               <tr class="table-row">
-                  <th>Estatus del consentimiento</th>
+                  <th class="status-account">Estatus del consentimiento</th>
                   <td>{{ entry.Status }}</td>
               </tr>
               <tr class="table-row">
-                  <th>Fecha de creación</th>
+                  <th class="status-account">Fecha de creación</th>
                   <td>{{ entry.CreationDateTime }}</td>
               </tr>
               <tr class="table-row">
-                  <th>Fecha de expiración</th>
+                  <th class="status-account">Fecha de expiración</th>
                   <td>{{ entry.ExpirationDateTime }}</td>
               </tr>
               <tr class="table-row">
-                  <th>Permisos</th>
+                  <th class="status-account">Permisos</th>
                   <td>{{ entry.Permissions }}</td>
               </tr>
               {% endfor %}
@@ -89,20 +93,20 @@
           <table width="100%" id="tabla_transacciones" class="display">
             <thead>
                 <tr class="table-row">
-                    <th>Informacion de la transacción</th>
-                    <th>Estatus</th>
-                    <th>Fecha de aplicación</th>
-                    <th>Monto</th>
-                    <th>Moneda</th>
+                    <th class="transaction-info">Informacion de la transacción</th>
+                    <th class="transaction-status">Estatus</th>
+                    <th class="transaction-date">Fecha de aplicación</th>
+                    <th class="transaction-ammount">Monto</th>
+                    <th class="transaction-currency">Moneda</th>
                 </tr>
             </thead>
               {% for entry in TransaccionesCuenta %}
               <tr class="table-row">
-                <td>{{ entry.TransactionInformation }}</td>
-                <td>{{ entry.Status }}</td>
-                <td>{{ entry.BookingDateTime }}</td>
-                <td>{{ entry.Amount }}</td>
-                <td>{{ entry.Currency }}</td>
+                <td class="transaction-info">{{ entry.TransactionInformation }}</td>
+                <td class="transaction-status">{{ entry.Status }}</td>
+                <td class="transaction-date">{{ entry.BookingDateTime }}</td>
+                <td class="transaction-ammount">{{ entry.Amount }}</td>
+                <td class="transaction-currency">{{ entry.Currency }}</td>
               </tr>
               {% endfor %}
           </table>

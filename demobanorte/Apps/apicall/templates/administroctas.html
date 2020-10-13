@@ -3,44 +3,65 @@
 {% load static %}
 <div class="content">
 <h1>Administración de cuentas</h1>
+<h2>Agregar Cuentas</h2>
+<p>Selecciona proveedor de datos</p>
 {{  Error_Descr  }}
-<div class="menuServicio">
+<div class="menuServicio form_content">
     <form method="POST" action="{% url 'adminbanco' %}" class="menuCuentas">
         {% csrf_token %}
-            <div class="alt-account-title">
-                <label class="radio-label"><!-- CNBV -->
-                    <input type="radio" checked="checked" name="Institucion" value="CNBV">
+        <div class="alt-accounts">
+            <div class="alt-account content-box">
+                <input type="radio" checked="checked" name="Institucion" value="CNBV">
+            <div class="alt-account-icon">
+
                     <img src="{% static 'img/logo_cnbv.svg' %}" alt="Logo Banco Banregio">
-                </label>
             </div>
-            <div class="alt-account-title">
-                <label class="radio-label"><!-- Banorte -->
-                    <input type="radio" checked="checked" name="Institucion" value="banorte">
+        </div>
+        <div class="alt-account content-box">
+            <input type="radio" checked="checked" name="Institucion" value="banorte">
+            <div class="alt-account-icon">
                     <img src="{% static 'img/logo_banorte.svg' %}" alt="Logo Banco Banregio">
-                </label>
             </div>
+        </div>
+        </div>
+        <div class="menuElimina">
         <input class="btn" type="submit" value="Agregar">
+    </div>
     </form>
 </div>
 
+
+
+<h2>Cuentras Agregadas</h2>
+<p>Selecciona cuenta a administrar</p>
 <form method="POST" action="{% url 'eliminocta' %}" class="form_content">
     {% csrf_token %}
 
-    <div class="tarjetas accounts-transactions content-box" id="eliminocta_div">
+    <div class="alt-accounts" id="eliminocta_div">
         {% for entry in Saldos %}
-        <div class="tarjeta">
+        <div class="alt-account content-box">
             <div class="divMid">
                 <input type="radio" name="numerocuenta" value={{ entry.cuenta_numero }} />
             </div>
-            <div class="divMid text-right">
+            <div class="alt-account-icon">
+                <img src='{% static entry.cuenta_icono %}' alt="Logo Banco">
+            </div>
+            <div class="alt-account-bank">
+                <h4>{{ entry.institucion_descripcion }}</h4>
+            </div>
+            <div class="alt-account-name">
+                <h5>{{ entry.cuenta_nickname }}</h5>
+            </div>
+
+
+            <div class="alt-account-currency">
                 {{ entry.cuenta_currency }}
             </div>
+            <!--
             <div>
-                {{ entry.cuenta_nickname }}
+                {{ entry.cuenta_numero }}
             </div>
-            <div>
-                {{ entry.cuenta_institucion }}
-            </div>
+            -->
         </div>
         {% endfor %}
     </div>

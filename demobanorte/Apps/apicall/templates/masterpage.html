@@ -46,16 +46,15 @@
 		{{  ErrorActToken  }}
 		<div class="content">
 			<div class="content-container">
-				<h1>Título</h1>
+				<h1>Cuentas Agregadas</h1>
 				{% if Saldos %}
-				<div>
-					<p>Instruccciones</p>
+				<div class="page-instructions">
 				</div>
 				<div class="alt-accounts">
 					{% for entry in Saldos %}
 					<div class="alt-account content-box">
 						<div class="alt-account-icon">
-							<img src='{% static entry.cuenta_icono %}' alt="Logo Banco Banregio">
+							<img src='{% static entry.cuenta_icono %}' alt="Logo Banco">
 						</div>
 						<div class="alt-account-bank">
 							<h4>{{ entry.institucion_descripcion }}</h4>
@@ -64,10 +63,11 @@
 							<h5>{{ entry.cuenta_nickname }}</h5>
 						</div>
 						<div class="alt-account-funds">
-							<p class="alt-account-currency">{{ entry.cuenta_currency }}</p>
+							
 							{% if entry.cuenta_saldo == "Consentimiento Vencido" %}
 								<p class="consentimiento-vencido"><a href="{% url 'agregobanco' %}">{{ entry.cuenta_saldo }}</a></p>
 							{% else %}
+							<p class="alt-account-currency">{{ entry.cuenta_currency }}</p>
 								<p><span class="money-symbol">$</span>{{ entry.cuenta_saldo }}</p>
 							{% endif %}
 						</div>

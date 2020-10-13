@@ -4,6 +4,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  color: #333;
 }
 
 body,
@@ -18,6 +19,14 @@ a{
 
 a:hover{
   text-decoration: underline;
+}
+
+p{
+  color: #333;
+}
+
+h5{
+  font-size: 14px;
 }
 .login-container {
   position: relative;
@@ -127,12 +136,11 @@ a:hover{
 .content-box{
   background-color: #fff;
   padding: 15px;
-  border-radius: 15px;
+  border-radius: 4px;
   transition: 0.1s ease-out;
 }
 
 .content-box:hover{
-  box-shadow: 0px 10px 15px 5px rgba(0, 0, 0, 0.05);
   transform: translate(0px, -1px);
   transition: 0.2s ease-in;
 }
@@ -141,6 +149,10 @@ a:hover{
   display: flex;
   margin-bottom: 25px;
   width: 100%;
+}
+
+.page-instructions{
+  margin-bottom: 25px;
 }
 .main-account{
   display: inline-block;
@@ -262,10 +274,9 @@ a:hover{
 
 .alt-account{
   display: inline-block;
-  width: 24%;
-  height: 100px;
   margin-right: 1.5%;
   height: auto;
+  margin-bottom: 25px;
 }
 
 .alt-account:last-of-type{
@@ -274,7 +285,6 @@ a:hover{
 
 .accounts-transactions{
   width: 100%;
-  height: 100px;
 }
 
 .alt-account-title{
@@ -288,20 +298,14 @@ a:hover{
   display: inline-block;
   text-align: left;
   width: 85%;
-  transform: translateY(-100%);
-}
-.content-box{
-  border-radius:0px;
 }
 .content-box:hover{
-  box-shadow:0 5px 5px 0px rgba(220,220,220,0.75);
+  box-shadow:0 7px 15px 0px rgba(150,150,150,0.25);
 }
 .alt-account.content-box{
   border:1px solid #DADADA;
-  color: #333;
+  color: #111;
 }
-
-
 
 .alt-account-bank h4{
   font-family: 'Gotham', Helvetica, Arial, sans-serif;
@@ -313,6 +317,7 @@ a:hover{
   overflow: hidden;
   position: relative;
   height:200px;
+  width: 200px;
 }
 .alt-account-icon img{
   display:inline-block;
@@ -325,13 +330,17 @@ a:hover{
   transform: translate(-50%,-50%);
 }
 .alt-account-icon:hover img{
-  width:210px;
-  height:210px;
+  width:200px;
+  height:200px;
+  transform: translate(-50%,-50%) scale(1.1);
 }
 
 .consentimiento-vencido a{
   font-size: 18px;
   font-weight: 600;
+}
+
+.consentimiento-vencido p{
   text-align: center;
 }
 
@@ -371,11 +380,13 @@ a:hover{
 .transactions-table{
   background-color: #fff;
   height: auto;
+  color: #555;
 }
 
 .transactions-table table{
   border: none;
   border-width: 0;
+  color: #555;
 }
 
 .table-row{
@@ -385,12 +396,13 @@ a:hover{
 .table-row th{
   color: #333333;
   border-bottom: 1px solid #f2f2f2;
-  padding: 16px 0px;
+  padding: 16px 5px;
 }
 
 .table-row td{
   border-bottom: 1px solid #f2f2f2;
-  padding: 16px 0px;
+  padding: 16px 5px;
+  color: #555;
 }
 
 .signin-signup {
@@ -403,6 +415,11 @@ a:hover{
   display: grid;
   grid-template-columns: 1fr;
   z-index: 5;
+}
+
+.custom-select{
+  width: 35%;
+  display: inline-block;
 }
 
 form {
@@ -479,16 +496,16 @@ form.sign-in-form {
 }
 
 .btn {
+  font-family: 'Gotham', Arial, Helvetica, sans-serif;
   padding:0 20px;
   min-width: 150px;
   background-color: #eb0029;
   border: none;
   outline: none;
   height: 49px;
-  border-radius: 49px;
+  border-radius: 4px;
   color: #fff;
   text-transform: uppercase;
-  font-weight: 600;
   margin: 10px 0;
   cursor: pointer;
   transition: 0.5s;
@@ -556,11 +573,13 @@ form.sign-in-form {
   font-weight: 600;
   line-height: 1;
   font-size: 1.5rem;
+  color: #fff;
 }
 
 .panel p {
   font-size: 0.95rem;
   padding: 0.7rem 0;
+  color: #fff;
 }
 
 .btn.transparent {
@@ -788,10 +807,6 @@ h1{
   padding: 1.5rem 0;
 }
 
-
-
-
-
 .radio-label{
   display:inline-block;
 }
@@ -924,12 +939,33 @@ h1{
   }
 }
 
+.transaction-info{
+  text-align: left;
+}
 
+.transaction-status{
+  text-align: center;
+}
 
+.transaction-date{
+  text-align: center;
+}
 
+.transaction-ammount{
+  text-align: right;
+}
 
+.transaction-currency{
+  text-align: center;
+}
 
+.info-account{
+  text-align: right;
+}
 
+.status-account{
+  text-align: left;
+}
 
 
 
