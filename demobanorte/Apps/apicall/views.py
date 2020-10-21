@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as do_login
 from demobanorte.Apps.apicall.servicesCNBV import getSaldo, DetalleCuenta, DetalleConsentimiento, DevTransacciones, EliminaConsent, logincnbv, refrescarToken, eliminoconsent
+from demobanorte.Apps.apicall.servicesBanorte import identity, GenerateAccessTokenApigee, getSaldob, refrescarTokenB, DetalleCuentaB, DetalleConsentimientoB, DevTransaccionesB, EliminaConsentB, eliminoconsentB
 from demobanorte.Apps.apicall.models import cuentasUsuario, instituciones, MostrarSaldos, DetallesCuenta, DetalleConsent, DetalleTransaccion, procesocta
 from django.contrib.auth.models import User
 import requests
@@ -58,9 +59,15 @@ def register(request):
     return render(request, "register.html", {'form': form})
 # Llamado a la pagina de inicio de la aplicacion
 def home(request):
+    Mensaje = ''
     Cliente_id = request.user.get_username ()
-    #Cliente_id = request.GET['username']
-    Mensaje = refrescarToken('Cliente_id')
+    TokenAActualizar = procesocta.objects.all().filter(proceso_user=Cliente_id)
+    for entry in TokenAActualizar:
+        tokenRefresh = entry.proceso_refresh_token
+        if entry.proceso_inst_inf=='CNBV':
+            Mensaje = refrescarToken(Cliente_id, tokenRefresh)
+    #    else:
+    #        Mensaje = refrescarTokenB(Cliente_id, tokenRefresh)
     #AGREAR A LA VISTA
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
@@ -71,7 +78,10 @@ def home(request):
         if Institucion_desc:
             Nombre_Institucion = Institucion_desc.institucion_nombre
             icono = "img/logo_"+Institucion_desc.institucion_id+".svg"
-        SaldoCuenta = getSaldo(numeroCuenta, entry.cuenta_institucion, Cliente_id)
+        if entry.cuenta_inst_inf == 'banorte':
+            SaldoCuenta = getSaldob(numeroCuenta, entry.cuenta_institucion, Cliente_id)
+        else:
+            SaldoCuenta = getSaldo(numeroCuenta, entry.cuenta_institucion, Cliente_id)
         if SaldoCuenta == 'NoOK':
             Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, 'Consentimiento Vencido', entry.cuenta_institucion, Nombre_Institucion, entry.cuenta_currency, icono))
         else:
@@ -95,15 +105,19 @@ def agregobanco(request):
 def adminbanco(request):
     Cliente_id = request.user.get_username ()
     institucion = request.POST['Institucion']
-    Ruta = 'https://oauth2.ofpilot.com/hydra-public/oauth2/auth?client_id='
-    Client_id = 'z104dwltrg5e2cteoskjy5j2f20w0pte5cex3k0z'
-    characters = list('abcdefghijklmnopqrstvwyzABCDEFGHIJKLMNOPQRSTVWYZ1234567890')
-    state = ''
-    for x in range(25):
-        state += random.choice(characters)
-    redirecion = 'https://127.0.0.1:8000/redirect/'
-    RutaArmada = Ruta+Client_id+'&response_type=code&state='+state+'&scope=openid+offline+ReadAccountsBasic+ReadAccountsDetail+ReadBalances+ReadTransactionsBasic+ReadTransactionsDebits+ReadTransactionsDetail&redirect_uri='+redirecion
-    return redirect(RutaArmada)
+    if institucion == 'banorte':
+        RutaArmada = identity()
+        return redirect(RutaArmada)
+    else:
+        Ruta = 'https://oauth2.ofpilot.com/hydra-public/oauth2/auth?client_id='
+        Client_id = 'z104dwltrg5e2cteoskjy5j2f20w0pte5cex3k0z'
+        characters = list('abcdefghijklmnopqrstvwyzABCDEFGHIJKLMNOPQRSTVWYZ1234567890')
+        state = ''
+        for x in range(25):
+            state += random.choice(characters)
+        redirecion = 'https://127.0.0.1:8000/redirect/'
+        RutaArmada = Ruta+Client_id+'&response_type=code&state='+state+'&scope=openid+offline+ReadAccountsBasic+ReadAccountsDetail+ReadBalances+ReadTransactionsBasic+ReadTransactionsDebits+ReadTransactionsDetail&redirect_uri='+redirecion
+        return redirect(RutaArmada)
 
 def redirigir(request):
     CuentaCode = request.GET['code']
@@ -121,13 +135,34 @@ def redirigir(request):
     context={'Saldos':Json_file, 'Error_Descr': Mensaje}
     return render(request, 'administroctas.html', context)
 
+def redirigirb(request):
+    Cliente_id = request.user.get_username ()
+    CuentaCode = request.GET['code']
+    Mensaje = GenerateAccessTokenApigee(CuentaCode, Cliente_id)
+    cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
+    Json_file = []
+    for entry in cuentaUsuario:
+        Institucion_desc = instituciones.objects.get(institucion_codigo=entry.cuenta_institucion)
+        icono = "img/logo_"+Institucion_desc.institucion_id+".svg"
+        numeroCuenta = entry.cuenta_numero
+        Json_file.append(MostrarSaldos(entry.cuenta_numero, entry.cuenta_nickname, '', entry.cuenta_institucion, "", entry.cuenta_currency, icono))
+    context={'Saldos':Json_file, 'Error_Descr': Mensaje}
+    return render(request, 'administroctas.html', context)
+
 def eliminocta(request):
     Cliente_id = request.user.get_username ()
     cuenta = request.POST['numerocuenta']
-    if request.method=='POST' and 'Elimino' in request.POST:
-        Mensaje = EliminaConsent(cuenta, Cliente_id)
+    cuentaInfo = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta)
+    if cuentaInfo.cuenta_inst_inf =='banorte':
+        if request.method=='POST' and 'Elimino' in request.POST:
+            Mensaje = EliminaConsentB(cuenta, Cliente_id)
+        else:
+            Mensaje = eliminoconsentB(cuenta, Cliente_id)
     else:
-        Mensaje = eliminoconsent(cuenta, Cliente_id)
+        if request.method=='POST' and 'Elimino' in request.POST:
+            Mensaje = EliminaConsent(cuenta, Cliente_id)
+        else:
+            Mensaje = eliminoconsent(cuenta, Cliente_id)
     cuentaUsuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
     Json_file = []
     for entry in cuentaUsuario:
@@ -149,17 +184,31 @@ def devinformacion(request):
     serviciosolicitado = request.POST['serviciosolicitado']
     Cliente_id = request.user.get_username ()
     cuentausuario = cuentasUsuario.objects.all().filter(cuenta_user=Cliente_id)
-    if serviciosolicitado == 'detalle':
-        DetallesCuenta = DetalleCuenta(CuentaDetalle, Cliente_id)
-        context={'DetalleCuenta':DetallesCuenta, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
-    elif serviciosolicitado == 'consent':
-        DetallesCon = DetalleConsentimiento(CuentaDetalle, Cliente_id)
-        context={'DetallesConsent':DetallesCon, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
-    elif serviciosolicitado == 'transacciones':
-        TransaccionesCuenta = DevTransacciones(CuentaDetalle, Cliente_id)
-        context={'TransaccionesCuenta':TransaccionesCuenta, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
+    cuentaInfo = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=CuentaDetalle)
+    if cuentaInfo.cuenta_inst_inf =='banorte':
+        if serviciosolicitado == 'detalle':
+            DetallesCuenta = DetalleCuentaB(CuentaDetalle, Cliente_id)
+            context={'DetalleCuenta':DetallesCuenta, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
+        elif serviciosolicitado == 'consent':
+            DetallesCon = DetalleConsentimientoB(CuentaDetalle, Cliente_id)
+            context={'DetallesConsent':DetallesCon, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
+        elif serviciosolicitado == 'transacciones':
+            TransaccionesCuenta = DevTransaccionesB(CuentaDetalle, Cliente_id)
+            context={'TransaccionesCuenta':TransaccionesCuenta, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
+        else:
+            context = {}
     else:
-        context = {}
+        if serviciosolicitado == 'detalle':
+            DetallesCuenta = DetalleCuenta(CuentaDetalle, Cliente_id)
+            context={'DetalleCuenta':DetallesCuenta, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
+        elif serviciosolicitado == 'consent':
+            DetallesCon = DetalleConsentimiento(CuentaDetalle, Cliente_id)
+            context={'DetallesConsent':DetallesCon, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
+        elif serviciosolicitado == 'transacciones':
+            TransaccionesCuenta = DevTransacciones(CuentaDetalle, Cliente_id)
+            context={'TransaccionesCuenta':TransaccionesCuenta, 'cuentasusuario':cuentausuario, 'cuentadetalle':CuentaDetalle, 'Cliente_id':Cliente_id}
+        else:
+            context = {}
     return render(request, 'detallecuenta.html', context)
 
 def logout(request):

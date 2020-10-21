@@ -141,13 +141,13 @@ def DetalleCuenta(cuenta, Cliente_id):
 
     response = requests.request("GET", url, headers=headers, data = payload)
     pruebaload = json.loads(response.text)
+    RegistrosCta = []
     if response.status_code == 200:
-        RegistrosCta = []
         for entry in pruebaload["Data"]["Account"]:
             RegistrosCta.append(DetallesCuenta(entry['AccountId'], entry['Status'], entry['StatusUpdateDateTime'], entry['Currency'], entry['AccountType'], entry['AccountSubType'], entry['AccountIndicator'], entry['OnboardingType'], entry['Nickname'], entry['OpeningDate'], entry['Servicer']['SchemeName'], entry['Servicer']['Identification']))
     elif response.status_code == 400 or response.status_code == 401:
         codigo = response.status_code
-        RegistrosCta.append(DetallesCuenta(codigo, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '))
+        RegistrosCta.append(DetallesCuenta(codigo, 'No tiene autorización para solicitar esta información', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '))
     else:
         codigo = response.status_code
         Descrip = response.error_description
@@ -170,13 +170,13 @@ def DetalleConsentimiento(cuenta, Cliente_id):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
+    DetallesCon = []
     if response.status_code == 200:
         pruebaload = json.loads(response.text)
-        DetallesCon = []
         DetallesCon.append(DetalleConsent(pruebaload["Data"]['CreationDateTime'], pruebaload["Data"]['ExpirationDateTime'], pruebaload["Data"]['ConsentId'], pruebaload["Data"]['Status'],pruebaload["Data"]['Permissions']))
     elif response.status_code == 400 or response.status_code == 401:
         codigo = response.status_code
-        DetallesCon.append(DetalleConsent(codigo, ' ', ' ', ' ',' '))
+        DetallesCon.append(DetalleConsent(codigo, 'No tiene autorización para solicitar esta información', ' ', ' ',' '))
     else:
         codigo = response.status_code
         Descrip = response.error_description
@@ -197,19 +197,20 @@ def DevTransacciones(cuenta, Cliente_id):
     }
 
     response = requests.request("GET", url, headers=headers, data = payload)
+    Transaccionesdeta = []
     if response.status_code == 200:
         pruebaload = json.loads(response.text)
-        Transaccionesdeta = []
         for entry in pruebaload["Data"]["Transaction"]:
             Transaccionesdeta.append(DetalleTransaccion(entry['TransactionId'], entry['Status'], entry['BookingDateTime'], entry['TransactionInformation'], entry['Amount']['Amount'], entry['Amount']['Currency']))
     elif response.status_code == 400 or response.status_code == 401:
         codigo = response.status_code
-        Transaccionesdeta.append(DetalleTransaccion(codigo, ' ', ' ', ' ', ' ', ' '))
+        Transaccionesdeta.append(DetalleTransaccion(codigo, 'No tiene autorización para solicitar esta información', ' ', ' ', ' ', ' '))
     else:
         codigo = response.status_code
         Descrip = response.error_description
         Transaccionesdeta.append(DetalleTransaccion(codigo, Descrip, ' ', ' ', ' ', ' '))
     return(Transaccionesdeta)
+
 def EliminaConsent(cuenta, Cliente_id):
     Existe = 'No'
     cuentaeliminar = cuentasUsuario.objects.get(cuenta_user=Cliente_id, cuenta_numero=cuenta, cuenta_inst_inf='CNBV')
@@ -237,7 +238,10 @@ def EliminaConsent(cuenta, Cliente_id):
             Mensaje = 'Se elimino consentimiento y la cuenta '+cuentaeliminar.cuenta_nickname
         elif response.status_code == 400 or response.status_code == 401:
             codigo = response.status_code
-            Mensaje = 'Error:'+str(codigo)
+            Mensaje = 'Error:'+str(codigo)+' Se elimino la cuenta '+cuentaeliminar.cuenta_nickname +' ya no existia consentimiento'
+            proceliminar = procesocta.objects.get(proceso_user=Cliente_id, proceso_cod_inst=cuentaeliminar.cuenta_institucion, proceso_inst_inf='CNBV')
+            proceliminar.delete()
+            cuentaeliminar.delete()
         else:
             codigo = response.status_code
             Descrip = response.error_description
@@ -248,37 +252,34 @@ def EliminaConsent(cuenta, Cliente_id):
         print('MENSAJE:'+Mensaje)
     return(Mensaje)
 
-def refrescarToken(client_user):
+def refrescarToken(client_user, tokenRefresh):
     Mensaje = ' '
     client_id = Parametros.objects.get(parametro_id='CLIENT_ID', parametro_proxi='CNBV')
     client_secret = Parametros.objects.get(parametro_id='CLIENT_SEC', parametro_proxi='CNBV')
     Ruta_Redirect = Parametros.objects.get(parametro_id='RUTA_RED', parametro_proxi='CNBV')
-    TokenAActualizar = procesocta.objects.all().filter(proceso_user=client_user, proceso_inst_inf='CNBV')
-    for entry in TokenAActualizar:
-        tokenRefresh = entry.proceso_refresh_token
-        url = "https://oauth2.ofpilot.com/hydra-public/oauth2/token"
+    url = "https://oauth2.ofpilot.com/hydra-public/oauth2/token"
 
-        payload = 'grant_type=refresh_token&refresh_token='+tokenRefresh+'&client_id='+client_id.parametro_valor+'&client_secret='+client_secret.parametro_valor+'&redirect_uri='+Ruta_Redirect.parametro_valor
-        headers = {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Cookie': 'oauth2_authentication_csrf=MTYwMTkzMDQ2N3xEdi1CQkFFQ180SUFBUkFCRUFBQVB2LUNBQUVHYzNSeWFXNW5EQVlBQkdOemNtWUdjM1J5YVc1bkRDSUFJRGRqTmpFMFlUSmxZVGRtWXpRME0yTTVNREEwTXpFMFlUVmhaakV4WXpGbXyYQXMOqEMA7vX-n-hOsUszVLGKwsXzu6iBDnYDTWHGvg=='
-        }
-        response = requests.request("POST", url, headers=headers, data = payload)
-        respuesta = response.json()
-        if response.status_code == 200:
-            Access_Token = respuesta['access_token']
-            id_token = respuesta['id_token']
-            refresh_token = respuesta['refresh_token']
-            entry.proceso_token = Access_Token
-            entry.proceso_refresh_token = refresh_token
-            entry.save()
-        elif response.status_code == 400 or response.status_code == 401:
-            codigo = response.status_code
-            Mensaje += 'Error:'+str(codigo)+'-'
-        else:
-            codigo = response.status_code
-            Descrip = response.error_description
-            Mensaje += 'Error:'+str(codigo)+' Que indica:'+Descrip
+    payload = 'grant_type=refresh_token&refresh_token='+tokenRefresh+'&client_id='+client_id.parametro_valor+'&client_secret='+client_secret.parametro_valor+'&redirect_uri='+Ruta_Redirect.parametro_valor
+    headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Cookie': 'oauth2_authentication_csrf=MTYwMTkzMDQ2N3xEdi1CQkFFQ180SUFBUkFCRUFBQVB2LUNBQUVHYzNSeWFXNW5EQVlBQkdOemNtWUdjM1J5YVc1bkRDSUFJRGRqTmpFMFlUSmxZVGRtWXpRME0yTTVNREEwTXpFMFlUVmhaakV4WXpGbXyYQXMOqEMA7vX-n-hOsUszVLGKwsXzu6iBDnYDTWHGvg=='
+    }
+    response = requests.request("POST", url, headers=headers, data = payload)
+    respuesta = response.json()
+    if response.status_code == 200:
+        Access_Token = respuesta['access_token']
+        id_token = respuesta['id_token']
+        refresh_token = respuesta['refresh_token']
+        entry.proceso_token = Access_Token
+        entry.proceso_refresh_token = refresh_token
+        entry.save()
+    elif response.status_code == 400 or response.status_code == 401:
+        codigo = response.status_code
+        Mensaje += 'Error:'+str(codigo)+'-'
+    else:
+        codigo = response.status_code
+        Descrip = response.error_description
+        Mensaje += 'Error:'+str(codigo)+' Que indica:'+Descrip
     return(Mensaje)
 
 def eliminoconsent(cuenta, Cliente_id):
