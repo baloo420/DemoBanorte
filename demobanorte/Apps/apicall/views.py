@@ -56,7 +56,7 @@ def register(request):
                 return redirect('login')
 
     # Si llegamos al final renderizamos el formulario
-    return render(request, "register.html", {'form': form})
+    return render(request, "login.html", {'form': form})
 # Llamado a la pagina de inicio de la aplicacion
 def home(request):
     Mensaje = ''

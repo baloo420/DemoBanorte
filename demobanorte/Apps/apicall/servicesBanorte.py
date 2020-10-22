@@ -133,9 +133,6 @@ def GenerateAccessTokenApigee(code, Cliente_id):
 
         response = requests.request("GET", url, headers=headers, data = payload)
         if response.status_code == 200:
-            print('----------------------------------------------')
-            print(response.text)
-            print('----------------------------------------------')
             pruebaload = json.loads(response.text)
             if pruebaload["Data"]["Account"]:
                 for Informacion in pruebaload["Data"]["Account"]:
@@ -155,10 +152,7 @@ def GenerateAccessTokenApigee(code, Cliente_id):
                         Status = Informacion['Status']
                     else:
                         Status = 'Sin Permiso'
-                    if Informacion['Servicer']['Identification']:
-                        institucion = Informacion['Servicer']['Identification']
-                    else:
-                        institucion = 'Sin Permiso'
+                    institucion = '40072'
                     r = cuentasUsuario(
                     cuenta_numero = Nocuenta,
                     cuenta_user = Cliente_id,
@@ -181,7 +175,9 @@ def GenerateAccessTokenApigee(code, Cliente_id):
                 )
                 s.save()
                 Mensaje = 'Se agregaron las cuentas correctamente'
-        elif response.status_code == 400 or response.status_code == 401:
+        elif response.status_code == 401:
+            Mensaje = 'No se recibieron cuentas relacionadas al usuario o no se le dio consentimiento a ninguna cuenta'
+        elif response.status_code == 400:
             codigo = response.status_code
             Mensaje = 'Error:'+str(codigo)
         else:
