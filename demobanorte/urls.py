@@ -26,6 +26,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('admin/', admin.site.urls),
     path('home/', views.home, name='home'),
+    path('redirectB/', views.redirigirb, name='redirigirb'),
     path('redirect/', views.redirigir, name='redirigir'),
     path('administro_ctas/', views.agregobanco, name='agregobanco'),
     path('administro_ctas_/', views.adminbanco, name='adminbanco'),
