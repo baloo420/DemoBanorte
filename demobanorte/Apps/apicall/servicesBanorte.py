@@ -10,7 +10,6 @@ import uuid
 import hashlib
 import os
 import base64
-import python_jwt as jwt, jwcrypto.jwk as jwk, datetime
 import jwt
 
 
@@ -134,14 +133,32 @@ def GenerateAccessTokenApigee(code, Cliente_id):
 
         response = requests.request("GET", url, headers=headers, data = payload)
         if response.status_code == 200:
+            print('----------------------------------------------')
+            print(response.text)
+            print('----------------------------------------------')
             pruebaload = json.loads(response.text)
             if pruebaload["Data"]["Account"]:
                 for Informacion in pruebaload["Data"]["Account"]:
-                    Nocuenta = Informacion['AccountId']
-                    Nickname = Informacion['Nickname']
-                    Currency = Informacion['Currency']
-                    Status = Informacion['Status']
-                    institucion = Informacion['Servicer']['Identification']
+                    if Informacion['AccountId']:
+                        Nocuenta = Informacion['AccountId']
+                    else:
+                        Nocuenta = 'Sin Permiso'
+                    if Informacion['Nickname']:
+                        Nickname = Informacion['Nickname']
+                    else:
+                        Nickname = 'Sin Permiso'
+                    if Informacion['Currency']:
+                        Currency = Informacion['Currency']
+                    else:
+                        Currency = 'Sin Permiso'
+                    if Informacion['Status']:
+                        Status = Informacion['Status']
+                    else:
+                        Status = 'Sin Permiso'
+                    if Informacion['Servicer']['Identification']:
+                        institucion = Informacion['Servicer']['Identification']
+                    else:
+                        institucion = 'Sin Permiso'
                     r = cuentasUsuario(
                     cuenta_numero = Nocuenta,
                     cuenta_user = Cliente_id,
@@ -193,9 +210,13 @@ def getSaldob(cuenta, cod_institucion, Cliente_id):
     response = requests.request("GET", url, headers=headers, data = payload)
     if response.status_code == 200:
         pruebaload = json.loads(response.text)
-        for Informacion in pruebaload["Data"]["Balance"]:
-            Monto = Informacion["Amount"]['Amount']
-        return(Monto)
+        if pruebaload["Data"]["Balance"]:
+            for Informacion in pruebaload["Data"]["Balance"]:
+                Monto = Informacion["Amount"]['Amount']
+            return(Monto)
+        else:
+            Monto = 'Sin Permisos'
+            return(Monto)
     else:
         return('NoOK')
 
