@@ -17,7 +17,7 @@
     </div>
       <div class="custom-select">
         <p>Selecciona una cuenta</p>
-      <select name="cuentadetalle" >
+      <select name="cuentadetalle" required>
         {% for entry in cuentasusuario %}
           <option value={{ entry.cuenta_numero }}>{{ entry.cuenta_nickname }}</option>
         {% endfor %}
